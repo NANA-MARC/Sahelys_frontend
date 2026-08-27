@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@theme {
+  --color-sahelys-navy: #0b315c;
+  --color-sahelys-blue: #2f7dd3;
+  --color-sahelys-surface: #f4f8fc;
+  --color-sahelys-card: #ffffff;
+  --color-sahelys-text: #10284a;
+  --color-sahelys-muted: #6b7685;
+  --color-sahelys-success: #3ba55c;
+  --color-sahelys-warning: #f6a623;
+  --color-sahelys-danger: #d9534f;
+}

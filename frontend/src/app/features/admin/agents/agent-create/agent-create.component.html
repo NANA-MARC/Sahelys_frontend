@@ -1,0 +1,217 @@
+<header class="wizard-header">
+  <div class="brand-block">
+    <img src="/image/logo.jpeg" alt="SAHELYS" class="brand-logo" />
+  </div>
+  <h1 class="wizard-title">Création d'un agent</h1>
+  <a routerLink="/admin/agents" class="close-btn" aria-label="Annuler et fermer">
+    <svg [lucideIcon]="X" size="22"></svg>
+  </a>
+</header>
+
+<main class="wizard-shell">
+  <!-- Indicateur de progression -->
+  <nav class="stepper" aria-label="Étapes de création">
+    <div class="stepper-track">
+      <ng-container *ngFor="let step of steps; let last = last">
+        <button
+          type="button"
+          class="step"
+          [class.step--active]="currentStep === step.num"
+          [class.step--done]="currentStep > step.num"
+          (click)="currentStep > step.num ? goToStep(step.num) : null"
+          [attr.aria-current]="currentStep === step.num ? 'step' : null"
+        >
+          <span class="step__bubble">
+            <svg *ngIf="currentStep > step.num" [lucideIcon]="Check" size="16"></svg>
+            <span *ngIf="currentStep <= step.num">{{ step.num }}</span>
+          </span>
+          <span class="step__label">{{ step.label }}</span>
+        </button>
+        <div *ngIf="!last" class="step-connector" [class.step-connector--done]="currentStep > step.num"></div>
+      </ng-container>
+    </div>
+  </nav>
+
+  <!-- Carte de l'étape -->
+  <form [formGroup]="wizardForm" class="step-card">
+
+    <!-- ÉTAPE 1 : Nom & rôle -->
+    <div *ngIf="currentStep === 1" formGroupName="step1">
+      <h2>Nommez votre agent</h2>
+      <p class="step-description">Donnez un nom clair et une description à votre agent</p>
+
+      <div class="field">
+        <label for="agent-nom">Nom de l'agent</label>
+        <input id="agent-nom" type="text" formControlName="nom" placeholder="Ex: Agent RH" />
+      </div>
+
+      <div class="field">
+        <label for="agent-description">Description courte</label>
+        <textarea
+          id="agent-description"
+          formControlName="description"
+          rows="4"
+          placeholder="Décrivez en une phrase le rôle de cet agent"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="agent-direction">Direction associée</label>
+        <select id="agent-direction" formControlName="direction">
+          <option *ngFor="let d of directions" [value]="d.value">{{ d.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 2 : Documents -->
+    <div *ngIf="currentStep === 2" formGroupName="step2">
+      <h2>Sources documentaires</h2>
+      <p class="step-description">Ajoutez les documents que l'agent utilisera pour répondre</p>
+
+      <div class="upload-area">
+        <label for="file-upload" class="upload-label">
+          <svg [lucideIcon]="Upload" size="24" class="upload-icon"></svg>
+          <span>Cliquez ou glissez-déposez vos fichiers ici</span>
+          <small>PDF, DOCX, XLSX, TXT acceptés</small>
+          <input id="file-upload" type="file" multiple (change)="onFileSelected($event)" accept=".pdf,.docx,.xlsx,.txt" class="sr-only" />
+        </label>
+      </div>
+
+      <ul class="doc-list" *ngIf="currentDocuments.length > 0">
+        <li *ngFor="let file of currentDocuments" class="doc-item">
+          <span class="doc-name">{{ file.name }}</span>
+          <button type="button" class="doc-remove" (click)="removeDocument(file.name)" aria-label="Supprimer ce document">
+            <svg [lucideIcon]="Trash2" size="16"></svg>
+          </button>
+        </li>
+      </ul>
+      <p class="empty-hint" *ngIf="currentDocuments.length === 0">
+        Aucun document ajouté — vous pourrez en ajouter plus tard depuis le détail de l'agent.
+      </p>
+    </div>
+
+    <!-- ÉTAPE 3 : Utilisateurs -->
+    <div *ngIf="currentStep === 3" formGroupName="step3">
+      <h2>Utilisateurs autorisés</h2>
+      <p class="step-description">Sélectionnez les collaborateurs qui auront accès à cet agent</p>
+
+      <ul class="user-list" *ngIf="utilisateurs$ | async as users">
+        <li
+          *ngFor="let user of users"
+          class="user-item"
+          [class.user-item--selected]="isUserSelected(user.id)"
+          (click)="toggleUser(user.id)"
+        >
+          <div class="user-avatar">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
+            <span class="user-role">{{ user.direction }} · {{ user.role }}</span>
+          </div>
+          <div class="user-check" *ngIf="isUserSelected(user.id)">
+            <svg [lucideIcon]="Check" size="16"></svg>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ÉTAPE 4 : Instructions & ton -->
+    <div *ngIf="currentStep === 4" formGroupName="step4">
+      <h2>Définissez le comportement de l'agent</h2>
+      <p class="step-description">Ces instructions orientent la façon dont l'agent répond aux questions</p>
+
+      <div class="field">
+        <label for="agent-instructions">Instructions de l'agent</label>
+        <textarea
+          id="agent-instructions"
+          formControlName="instructions"
+          rows="6"
+          placeholder="Ex: Tu es l'assistant RH de SAHELYS. Réponds de façon claire et professionnelle..."
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label>Ton de l'agent</label>
+        <div class="tone-selector">
+          <button
+            *ngFor="let ton of tons"
+            type="button"
+            class="tone-btn"
+            [class.tone-btn--active]="wizardForm.get('step4.ton')?.value === ton.value"
+            (click)="wizardForm.get('step4.ton')?.setValue(ton.value)"
+          >
+            {{ ton.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 5 : Récapitulatif & Publication -->
+    <div *ngIf="currentStep === 5">
+      <h2 class="recap-title">Vérifiez et publiez votre agent</h2>
+      <p class="step-description">Vérifiez les informations avant de rendre l'agent disponible</p>
+
+      <div class="recap-list">
+        <div class="recap-row">
+          <div class="recap-info">
+            <span class="recap-label">NOM & RÔLE</span>
+            <span class="recap-value">{{ wizardForm.get('step1.nom')?.value }} — {{ directionLabel }}</span>
+          </div>
+          <button type="button" class="recap-edit" (click)="goToStep(1)">Modifier</button>
+        </div>
+
+        <div class="recap-row">
+          <div class="recap-info">
+            <span class="recap-label">SOURCES DOCUMENTAIRES</span>
+            <span class="recap-value">
+              {{ currentDocuments.length > 0 ? currentDocuments.length + ' document' + (currentDocuments.length > 1 ? 's' : '') + ' ajouté' + (currentDocuments.length > 1 ? 's' : '') : 'Aucun document ajouté' }}
+            </span>
+          </div>
+          <button type="button" class="recap-edit" (click)="goToStep(2)">Modifier</button>
+        </div>
+
+        <div class="recap-row">
+          <div class="recap-info">
+            <span class="recap-label">UTILISATEURS AUTORISÉS</span>
+            <span class="recap-value">
+              {{ (wizardForm.get('step3.utilisateurIds')?.value?.length ?? 0) > 0 ? wizardForm.get('step3.utilisateurIds')?.value?.length + ' collaborateur(s) sélectionné(s)' : 'Accès ouvert à toute la direction' }}
+            </span>
+          </div>
+          <button type="button" class="recap-edit" (click)="goToStep(3)">Modifier</button>
+        </div>
+
+        <div class="recap-row">
+          <div class="recap-info">
+            <span class="recap-label">TON</span>
+            <span class="recap-value">{{ wizardForm.get('step4.ton')?.value | titlecase }}</span>
+          </div>
+          <button type="button" class="recap-edit" (click)="goToStep(4)">Modifier</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="wizard-nav" [class.wizard-nav--publish]="currentStep === 5">
+      <ng-container *ngIf="currentStep < 5">
+        <button type="button" class="secondary-btn" [disabled]="currentStep === 1" (click)="previous()">
+          Précédent
+        </button>
+        <button type="button" class="primary-btn" [disabled]="!canGoNext()" (click)="next()">
+          Suivant
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="currentStep === 5">
+        <button type="button" class="secondary-btn" (click)="previous()">
+          Précédent
+        </button>
+        <button type="button" class="outline-btn" (click)="publishAgent('brouillon')">
+          Enregistrer comme brouillon
+        </button>
+        <button type="button" class="primary-btn" (click)="publishAgent('publié')">
+          <svg [lucideIcon]="Check" size="16"></svg>
+          Publier l'agent
+        </button>
+      </ng-container>
+    </div>
+  </form>
+</main>

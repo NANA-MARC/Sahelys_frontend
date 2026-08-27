@@ -1,0 +1,74 @@
+<div class="message-row" [class.message-row--user]="message().auteur === 'utilisateur'">
+  <div class="avatar-box">
+    @if (message().auteur === 'utilisateur') {
+      <div class="avatar avatar--user"><svg [lucideIcon]="UserIcon" size="18"></svg></div>
+    } @else {
+      <div class="avatar avatar--bot"><svg [lucideIcon]="BotIcon" size="18"></svg></div>
+    }
+  </div>
+
+  <div class="message-content">
+    <div class="message-meta">
+      <span class="sender-name">{{ message().auteur === 'utilisateur' ? 'Vous' : (agentName() || 'Agent IA') }}</span>
+      <span class="timestamp">{{ message().creeLe }}</span>
+    </div>
+
+    <div class="bubble">
+      {{ message().contenu }}
+    </div>
+
+    <!-- RAG Sources & Feedback for Agent Messages -->
+    @if (message().auteur === 'agent') {
+      <div class="message-footer">
+        @if (message().sources?.passages && message().sources!.passages.length > 0) {
+          <button type="button" class="sources-toggle-btn" (click)="toggleSources()">
+            <svg [lucideIcon]="FileText" size="14"></svg>
+            <span>{{ message().sources!.passages.length }} document(s) source(s)</span>
+            <svg [lucideIcon]="showSources() ? ChevronUp : ChevronDown" size="14"></svg>
+          </button>
+        }
+
+        <div class="feedback-actions">
+          <button
+            type="button"
+            class="feedback-btn"
+            [class.feedback-btn--active]="userFeedback() === 'up'"
+            (click)="setFeedback('up')"
+            title="Réponse utile"
+          >
+            <svg [lucideIcon]="ThumbsUp" size="14"></svg>
+          </button>
+          <button
+            type="button"
+            class="feedback-btn"
+            [class.feedback-btn--active]="userFeedback() === 'down'"
+            (click)="setFeedback('down')"
+            title="Réponse imprécise"
+          >
+            <svg [lucideIcon]="ThumbsDown" size="14"></svg>
+          </button>
+        </div>
+      </div>
+
+      @if (showSources() && message().sources?.passages) {
+        <div class="sources-drawer">
+          <span class="drawer-title">Sources extraites pour cette réponse :</span>
+          <div class="sources-list">
+            @for (source of (message().sources?.passages || []); track source.document + $index) {
+              <div class="source-card">
+                <div class="source-header">
+                  <svg [lucideIcon]="FileText" size="14" class="source-icon"></svg>
+                  <span class="source-name">{{ source.document }} ({{ source.reference }})</span>
+                  <span class="source-score" *ngIf="source.score">
+                    {{ (source.score * 100) | number: '1.0-0' }}% pertinence
+                  </span>
+                </div>
+                <p class="source-extrait" *ngIf="source.texte">{{ source.texte }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

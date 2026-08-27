@@ -1,0 +1,328 @@
+// =====================================================================
+// agents-list.component.scss — Espace Référent : Liste des agents
+// Palette : #0052CC navy, #0052CC→#1D72E8 accent, #EEF3F8 fond
+// =====================================================================
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #EEF3F8;
+  font-family: 'Roboto', sans-serif;
+}
+
+// --- Header ---
+.sahelys-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  background: #0052CC;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  height: 36px;
+  width: auto;
+  border-radius: 4px;
+}
+
+.header-section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.03em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.avatar-btn {
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: #1D72E8;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: white;
+  }
+}
+
+// --- Page shell ---
+.page-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+// --- Titre et actions ---
+.page-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0A1C33;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: #5A6E85;
+  font-size: 0.95rem;
+}
+
+.page-title-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+// --- Filtres par statut ---
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: #E1EDFF;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.filter-tab {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #0052CC;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(18, 58, 102, 0.1);
+  }
+
+  &--active {
+    background: #ffffff;
+    color: #0052CC;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// --- Bouton principal ---
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0052CC, #1D72E8);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(30, 95, 191, 0.3);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30, 95, 191, 0.4);
+  }
+}
+
+// --- Grille d'agents ---
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+// --- Carte agent ---
+.agent-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #E1E7F0;
+  border-radius: 12px;
+  padding: 28px 24px 20px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(18, 58, 102, 0.13);
+
+    .agent-card__arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+// Badge de statut
+.agent-card__badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  &.badge--publi {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.badge--brouillon {
+    background: #f2f2f2;
+    color: #757575;
+  }
+
+  &.badge--d,
+  &.badge--desactiv {
+    background: #fdecea;
+    color: #c62828;
+  }
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+// Icône de l'agent
+.agent-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+  background: linear-gradient(135deg, #0052CC, #1D72E8);
+  color: white;
+  box-shadow: 0 4px 14px rgba(30, 95, 191, 0.3);
+
+  &.icon-it {
+    background: linear-gradient(135deg, #0d47a1, #1565c0);
+  }
+
+  &.icon-rh {
+    background: linear-gradient(135deg, #0052CC, #1D72E8);
+  }
+}
+
+// Corps de la carte
+.agent-card__body {
+  text-align: center;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0A1C33;
+  }
+}
+
+.doc-count {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #5A6E85;
+}
+
+// Flèche de navigation
+.agent-card__arrow {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #E1EDFF;
+  color: #0052CC;
+  opacity: 0.7;
+  transform: translateX(-2px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+// --- État vide ---
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  color: #5A6E85;
+}
+
+// --- Responsive ---
+@media (max-width: 640px) {
+  .page-title-row {
+    flex-direction: column;
+  }
+
+  .page-title-row__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+}

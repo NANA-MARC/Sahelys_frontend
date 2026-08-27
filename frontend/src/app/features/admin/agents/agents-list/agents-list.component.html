@@ -1,0 +1,64 @@
+<app-header backUrl="/chat" title="Administration des Agents"></app-header>
+
+
+<main class="page-shell">
+  <div class="page-title-row">
+    <div>
+      <h1>Mes agents</h1>
+      <p class="subtitle">{{ directionLabel }}</p>
+    </div>
+
+    <div class="page-title-row__actions">
+      <div class="filter-tabs" role="tablist" aria-label="Filtrer par statut">
+        <button
+          *ngFor="let opt of statusOptions"
+          type="button"
+          role="tab"
+          class="filter-tab"
+          [class.filter-tab--active]="statusFilter === opt.value"
+          [attr.aria-selected]="statusFilter === opt.value"
+          (click)="setFilter(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+
+      <a routerLink="/admin/agents/create" class="primary-btn">
+        <svg [lucideIcon]="Plus" size="18"></svg>
+        Créer un agent
+      </a>
+    </div>
+  </div>
+
+  <section class="agent-grid" aria-label="Liste des agents">
+    <ng-container *ngIf="agents$ | async as agents">
+      <article
+        *ngFor="let agent of agents"
+        class="agent-card"
+        [routerLink]="['/admin/agent', agent.id]"
+      >
+        <div class="agent-card__badge" [ngClass]="getStatusClass(agent.statut)">
+          <span class="badge-dot"></span>
+          {{ agent.statut | titlecase }}
+        </div>
+
+        <div class="agent-card__icon" [ngClass]="getIconClass(agent.id)">
+          <svg [lucideIcon]="getIconForAgent(agent.id)" size="28"></svg>
+        </div>
+
+        <div class="agent-card__body">
+          <h2>{{ agent.nom }}</h2>
+          <p class="doc-count">{{ agent.docCount }} document{{ agent.docCount > 1 ? 's' : '' }} indexé{{ agent.docCount > 1 ? 's' : '' }}</p>
+        </div>
+
+        <div class="agent-card__arrow" aria-hidden="true">
+          <svg [lucideIcon]="ArrowRight" size="20"></svg>
+        </div>
+      </article>
+
+      <p *ngIf="agents.length === 0" class="empty-state">
+        Aucun agent ne correspond aux critères sélectionnés.
+      </p>
+    </ng-container>
+  </section>
+</main>

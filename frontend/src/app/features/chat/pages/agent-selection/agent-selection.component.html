@@ -1,0 +1,53 @@
+<app-header
+  title="Agents Conversationnels"
+  [searchValue]="searchQuery()"
+  (searchChange)="onSearchChange($event)"
+  searchPlaceholder="Rechercher un agent ou un mot-clé..."
+></app-header>
+
+<main class="page-shell">
+  <!-- Action Bar -->
+  <div class="title-row">
+    <p class="subtitle">Sélectionnez un agent IA spécialisé selon votre besoin documentaire</p>
+    <button type="button" class="secondary-btn" routerLink="/chat/conversations">
+      <svg [lucideIcon]="History" size="18" class="history-icon"></svg>
+      Mes conversations
+    </button>
+  </div>
+
+  <!-- Direction Filter Pills -->
+  <section class="filters-section" aria-label="Filtres par direction">
+    <div class="filter-pills">
+      @for (d of availableDirections(); track d.value) {
+        <button
+          type="button"
+          class="pill-btn"
+          [class.pill-btn--active]="selectedDirection() === d.value"
+          (click)="setDirection(d.value)"
+        >
+          {{ d.label }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Agent Grid -->
+  <section class="agent-grid-wrapper" aria-label="Liste des agents">
+    @if (filteredAgents().length > 0) {
+      <div class="agent-grid">
+        @for (agent of filteredAgents(); track agent.id) {
+          <app-agent-card [agent]="agent" (select)="selectAgent($event)"></app-agent-card>
+        }
+      </div>
+    } @else {
+      <div class="empty-results">
+        <svg [lucideIcon]="Sparkles" size="36" class="empty-icon"></svg>
+        <h3>Aucun agent ne correspond à votre recherche</h3>
+        <p>Essayez de modifier votre mot-clé ou réinitialisez le filtre par direction.</p>
+        <button type="button" class="reset-btn" (click)="onSearchChange(''); setDirection('TOUTES')">
+          Réinitialiser les filtres
+        </button>
+      </div>
+    }
+  </section>
+</main>

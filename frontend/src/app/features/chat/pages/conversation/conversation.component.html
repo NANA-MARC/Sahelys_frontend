@@ -1,0 +1,123 @@
+<app-header
+  backUrl="/chat"
+  [title]="(agent$ | async)?.nom || 'Agent Conversationnel'"
+  [showSearch]="false"
+></app-header>
+
+<main class="conversation-layout" [class.sidebar-collapsed]="sidebarCollapsed">
+  <aside class="conversation-sidebar">
+    <div class="sidebar-header">
+      <button type="button" class="new-conversation" (click)="startNewConversation()">
+        <svg [lucideIcon]="Plus" size="18" class="plus-icon"></svg>
+        <span class="new-conversation__label">Nouvelle conversation</span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-toggle"
+        [attr.aria-label]="
+          sidebarCollapsed
+            ? 'Ouvrir le menu des conversations'
+            : 'Réduire le menu des conversations'
+        "
+        (click)="toggleSidebar()"
+      >
+        <svg [lucideIcon]="Menu" size="20"></svg>
+      </button>
+    </div>
+
+    <nav class="conversation-history" aria-label="Historique des conversations">
+      <ng-container *ngIf="sidebarConversations$ | async as conversations">
+        <a
+          class="history-item"
+          *ngFor="let conversation of conversations"
+          [class.history-item--active]="(conversation$ | async)?.id === conversation.id"
+          href="#messages"
+          (click)="selectConversation(conversation.id)"
+        >
+          <span>{{ conversation.titre }}</span>
+          <small>{{ conversation.misAJourLe | date: 'dd/MM' }}</small>
+        </a>
+      </ng-container>
+    </nav>
+  </aside>
+
+  <section class="chat-panel">
+    <section
+      id="messages"
+      class="messages"
+      *ngIf="conversation$ | async as conversation; else emptyState"
+    >
+      @for (message of conversation.messages; track message.id) {
+        <app-message-bubble
+          [message]="message"
+          [agentName]="(agent$ | async)?.nom || 'Agent IA'"
+        ></app-message-bubble>
+      }
+
+      <article class="message message--agent" *ngIf="streamedAnswer">
+        <span class="message-avatar" aria-hidden="true">
+          <svg [lucideIcon]="Bot" size="20"></svg>
+        </span>
+        <div class="message-body">
+          <span class="author">Agent · {{ isStreaming ? 'répond...' : 'réponse complète' }}</span>
+          <p>{{ streamedAnswer }}</p>
+        </div>
+      </article>
+    </section>
+
+    <ng-template #emptyState>
+      <div class="empty-chat-state">
+        <svg [lucideIcon]="MessageSquare" size="48" class="empty-icon"></svg>
+        <h3>Discutez avec {{ (agent$ | async)?.nom || 'cet Agent' }}</h3>
+        <p>Posez vos questions liées à la documentation de la direction {{ (agent$ | async)?.direction }}.</p>
+      </div>
+    </ng-template>
+
+    <!-- Formulaire d'envoi avec pièces jointes -->
+    <div class="composer-container">
+      @if (attachedFiles.length > 0) {
+        <div class="attachment-bar">
+          @for (file of attachedFiles; track file.name; let i = $index) {
+            <span class="file-chip">
+              <svg [lucideIcon]="Paperclip" size="14"></svg>
+              <span class="file-name">{{ file.name }}</span>
+              <button type="button" class="remove-chip" (click)="removeAttachedFile(i)">
+                <svg [lucideIcon]="X" size="14"></svg>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      <form class="composer" (ngSubmit)="sendMessage()">
+        <label class="attach-btn" title="Joindre un fichier (PDF, DOCX, TXT)">
+          <svg [lucideIcon]="Paperclip" size="20"></svg>
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.docx,.xlsx,.txt"
+            class="sr-only"
+            (change)="onFileSelect($event)"
+          />
+        </label>
+
+        <textarea
+          id="message"
+          name="message"
+          [(ngModel)]="draft"
+          rows="1"
+          placeholder="Posez votre question..."
+          (keydown.enter)="$event.preventDefault(); sendMessage()"
+        ></textarea>
+
+        <button
+          type="submit"
+          aria-label="Envoyer"
+          [disabled]="(!draft.trim() && attachedFiles.length === 0) || isStreaming"
+        >
+          <svg [lucideIcon]="Send" size="18"></svg>
+        </button>
+      </form>
+    </div>
+  </section>
+</main>

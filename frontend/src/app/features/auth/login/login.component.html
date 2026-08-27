@@ -1,0 +1,51 @@
+<section class="login-page">
+  <div class="login-card">
+    <div class="login-card__header">
+      <div class="brand" aria-label="SAHELYS">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">SAHELYS</span>
+      </div>
+      <h1>Connexion</h1>
+      <p class="subtitle">Accédez à vos agents SAHELYS</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="login()" #form="ngForm">
+      <label class="field">
+        <span>Adresse email</span>
+        <input type="email" name="email" [(ngModel)]="formModel.email" required />
+      </label>
+
+      <label class="field">
+        <span>Mot de passe</span>
+        <span class="password-field">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="formModel.password"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            [attr.aria-label]="
+              showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+            "
+            (click)="showPassword = !showPassword"
+          >
+            <span class="eye-icon" aria-hidden="true"></span>
+          </button>
+        </span>
+      </label>
+
+      <a class="forgot-password" href="#">Mot de passe oublié ?</a>
+
+      <button
+        type="submit"
+        class="primary-btn"
+        [disabled]="!formModel.email || !formModel.password"
+      >
+        Se connecter
+      </button>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 28px;
+  background: white;
+  border: 1px solid var(--sahelys-border, #e1e7f0);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 82, 204, 0.08);
+  }
+}
+
+.kpi-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--sahelys-text-muted, #5a6e85);
+}
+
+.kpi-value {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: var(--sahelys-dark, #0a1c33);
+  line-height: 1;
+
+  &--danger {
+    color: var(--sahelys-danger, #ef4444);
+  }
+}

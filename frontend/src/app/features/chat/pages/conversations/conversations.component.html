@@ -1,0 +1,58 @@
+<app-header
+  backUrl="/chat"
+  title="Historique"
+  [searchValue]="searchTerm"
+  (searchChange)="updateSearchTerm($event)"
+  searchPlaceholder="Rechercher une conversation..."
+></app-header>
+
+<main class="history-shell">
+  <section class="heading">
+    <p class="subtitle">Retrouvez l'historique de vos échanges avec les agents SAHELYS</p>
+
+    <div class="toolbar">
+      <label class="select-box">
+        <select
+          [ngModel]="selectedAgentId"
+          (ngModelChange)="updateAgentFilter($event)"
+          name="agent"
+        >
+          <option value="">Tous les agents</option>
+          <option *ngFor="let agent of filterOptions$ | async" [value]="agent.id">
+            {{ agent.nom }}
+          </option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="conversation-list">
+    <ng-container *ngIf="conversations$ | async as items">
+      <a
+        class="conversation-row"
+        *ngFor="let item of items"
+        [routerLink]="['/chat/conversation', item.agent?.id]"
+        [queryParams]="{ conversationId: item.conversation.id }"
+      >
+        <div class="row-left">
+          <div class="agent-avatar" [ngClass]="'icon-' + (item.agent?.id?.replace('agent-', '') || 'default')">
+            <svg [lucideIcon]="getIconForAgent(item.agent?.id)" size="20"></svg>
+          </div>
+          <div class="row-copy">
+            <span class="agent-name">{{ item.agent?.nom }}</span>
+            <h2>{{ item.conversation.titre }}</h2>
+          </div>
+        </div>
+
+        <div class="row-right">
+          <time>{{ item.conversation.misAJourLe | date: 'dd MMM yyyy, HH:mm' }}</time>
+          <svg [lucideIcon]="ChevronRight" size="20"></svg>
+        </div>
+      </a>
+
+      <div class="empty-state" *ngIf="items.length === 0">
+        <p>Aucune conversation trouvée.</p>
+      </div>
+    </ng-container>
+  </section>
+</main>

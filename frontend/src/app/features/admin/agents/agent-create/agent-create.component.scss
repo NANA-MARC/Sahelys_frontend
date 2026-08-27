@@ -1,0 +1,569 @@
+// =====================================================================
+// agent-create.component.scss — Wizard création d'agent
+// =====================================================================
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #EEF3F8;
+  font-family: 'Roboto', sans-serif;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+// --- Header ---
+.wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 64px;
+  background: #0052CC;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  width: 140px;
+}
+
+.brand-logo {
+  height: 36px;
+  width: auto;
+  border-radius: 4px;
+}
+
+.wizard-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.01em;
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+}
+
+// --- Wizard shell ---
+.wizard-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+// --- Stepper ---
+.stepper {
+  margin-bottom: 40px;
+}
+
+.stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: default;
+  padding: 0;
+
+  &--done {
+    cursor: pointer;
+  }
+}
+
+.step__bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #d1d9e0;
+  background: white;
+  color: #9ba5b0;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+
+  .step--active & {
+    border-color: #0052CC;
+    background: linear-gradient(135deg, #0052CC, #1D72E8);
+    color: white;
+    box-shadow: 0 4px 12px rgba(30, 95, 191, 0.35);
+  }
+
+  .step--done & {
+    border-color: #2e7d32;
+    background: #2e7d32;
+    color: white;
+  }
+}
+
+.step__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9ba5b0;
+  white-space: nowrap;
+
+  .step--active & {
+    color: #0A1C33;
+  }
+
+  .step--done & {
+    color: #2e7d32;
+  }
+}
+
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: #d1d9e0;
+  margin: 0 6px;
+  margin-bottom: 28px;
+  transition: background 0.3s ease;
+
+  &--done {
+    background: #2e7d32;
+  }
+}
+
+// --- Carte étape ---
+.step-card {
+  background: white;
+  border: 1px solid #E1E7F0;
+  border-radius: 12px;
+  padding: 36px 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0A1C33;
+}
+
+.step-description {
+  margin: 0 0 28px;
+  color: #5A6E85;
+  line-height: 1.5;
+}
+
+// --- Champs de formulaire ---
+.field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #3a4459;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #E1E7F0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #0A1C33;
+    background: #fff;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #1D72E8;
+      box-shadow: 0 0 0 3px rgba(45, 114, 217, 0.12);
+    }
+  }
+}
+
+// --- Zone d'upload ---
+.upload-area {
+  margin-bottom: 20px;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px;
+  border: 2px dashed #c8d6ea;
+  border-radius: 10px;
+  background: #f7faff;
+  color: #5A6E85;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  small {
+    font-size: 0.8rem;
+    color: #9ba5b0;
+  }
+
+  &:hover {
+    border-color: #1D72E8;
+    background: #eef4ff;
+  }
+}
+
+.upload-icon {
+  color: #1D72E8;
+  margin-bottom: 4px;
+}
+
+.doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f7faff;
+  border: 1px solid #E1E7F0;
+  border-radius: 8px;
+}
+
+.doc-name {
+  font-size: 0.88rem;
+  color: #0A1C33;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-remove {
+  border: none;
+  background: transparent;
+  color: #c62828;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #fdecea;
+  }
+}
+
+.empty-hint {
+  text-align: center;
+  color: #9ba5b0;
+  font-size: 0.88rem;
+  padding: 24px;
+}
+
+// --- Liste utilisateurs ---
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1.5px solid #E1E7F0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #1D72E8;
+    background: #f0f6ff;
+  }
+
+  &--selected {
+    border-color: #0052CC;
+    background: #eef4ff;
+  }
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0052CC, #1D72E8);
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  display: block;
+  font-weight: 600;
+  color: #0A1C33;
+  font-size: 0.9rem;
+}
+
+.user-role {
+  display: block;
+  font-size: 0.8rem;
+  color: #5A6E85;
+  text-transform: capitalize;
+}
+
+.user-check {
+  color: #0052CC;
+}
+
+// --- Sélecteur de ton ---
+.tone-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tone-btn {
+  padding: 10px 24px;
+  border: 1.5px solid #d1d9e0;
+  border-radius: 24px;
+  background: white;
+  color: #5A6E85;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #1D72E8;
+    color: #1D72E8;
+  }
+
+  &--active {
+    background: linear-gradient(135deg, #0052CC, #1D72E8);
+    border-color: transparent;
+    color: white;
+  }
+}
+
+// --- Récapitulatif (étape 5) ---
+.recap-title {
+  text-align: center;
+}
+
+.recap-list {
+  border: 1px solid #E1E7F0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.recap-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  gap: 16px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #E1E7F0;
+  }
+}
+
+.recap-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.recap-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #9ba5b0;
+  text-transform: uppercase;
+}
+
+.recap-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0A1C33;
+}
+
+.recap-edit {
+  border: none;
+  background: transparent;
+  color: #1D72E8;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// --- Navigation wizard ---
+.wizard-nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #E1E7F0;
+
+  &--publish {
+    justify-content: flex-end;
+  }
+}
+
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0052CC, #1D72E8);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(30, 95, 191, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30, 95, 191, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.secondary-btn {
+  padding: 12px 22px;
+  border: 1px solid #c8d6ea;
+  border-radius: 8px;
+  background: white;
+  color: #5A6E85;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #f5f8fc;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.outline-btn {
+  padding: 12px 22px;
+  border: 1.5px solid #c8d6ea;
+  border-radius: 8px;
+  background: transparent;
+  color: #0A1C33;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #1D72E8;
+    background: #f0f6ff;
+  }
+}
+
+// --- Responsive ---
+@media (max-width: 600px) {
+  .step-card {
+    padding: 24px 20px;
+  }
+
+  .stepper-track {
+    gap: 0;
+  }
+
+  .step__label {
+    display: none;
+  }
+
+  .step__bubble {
+    width: 36px;
+    height: 36px;
+    font-size: 0.88rem;
+  }
+
+  .wizard-nav {
+    flex-wrap: wrap;
+
+    .primary-btn,
+    .secondary-btn,
+    .outline-btn {
+      flex: 1;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+}

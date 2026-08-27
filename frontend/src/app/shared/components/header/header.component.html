@@ -1,0 +1,102 @@
+<header class="sahelys-header">
+  <!-- Gauche : Logo & Bouton Retour -->
+  <div class="header-left">
+    @if (backUrl()) {
+      <a [routerLink]="backUrl()" class="back-btn" aria-label="Retour">
+        <svg [lucideIcon]="ArrowLeft" size="20"></svg>
+      </a>
+    }
+
+    <a routerLink="/chat" class="brand-block" title="Accueil SahelysAgents">
+      <img src="/image/logo.jpeg" alt="SAHELYS" class="brand-logo" />
+    </a>
+  </div>
+
+  <!-- Centre : Nom de la page AU CENTRE -->
+  <div class="header-center">
+    @if (title()) {
+      <h1 class="header-title">{{ title() }}</h1>
+    }
+  </div>
+
+  <!-- Droite : Recherche décentrée + Actions rapides & Profil -->
+  <div class="header-right">
+    @if (showSearch()) {
+      <div class="search-box" aria-label="Recherche">
+        <svg [lucideIcon]="Search" size="18" class="search-icon"></svg>
+        <input
+          type="text"
+          [placeholder]="searchPlaceholder()"
+          [value]="searchValue()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+    }
+
+    <div class="header-actions" aria-label="Actions rapides">
+      <button type="button" class="icon-btn" aria-label="Aide" title="Centre d'aide">
+        <svg [lucideIcon]="HelpCircle" size="20"></svg>
+      </button>
+      <button type="button" class="icon-btn" aria-label="Notifications" title="Notifications">
+        <svg [lucideIcon]="Bell" size="20"></svg>
+      </button>
+      <button type="button" class="icon-btn" aria-label="Paramètres" title="Paramètres" routerLink="/chat/profile">
+        <svg [lucideIcon]="Settings" size="20"></svg>
+      </button>
+
+      <!-- User Profile & Dropdown -->
+      <div class="profile-dropdown-wrapper">
+        <button
+          type="button"
+          class="avatar-btn"
+          [class.avatar-btn--active]="isMenuOpen()"
+          (click)="toggleMenu()"
+          aria-label="Menu profil utilisateur"
+        >
+          <span class="avatar-text">{{ initials }}</span>
+          <svg [lucideIcon]="ChevronDown" size="14" class="chevron-icon"></svg>
+        </button>
+
+        @if (isMenuOpen()) {
+          <div class="dropdown-menu">
+            <div class="menu-user-info">
+              <div class="user-avatar-large">{{ initials }}</div>
+              <div class="user-details">
+                <span class="user-role-tag">{{ userRoleLabel }}</span>
+                <span class="user-direction-tag">Direction {{ userDirection }}</span>
+              </div>
+            </div>
+
+            <div class="menu-divider"></div>
+
+            <a routerLink="/chat/profile" (click)="closeMenu()" class="menu-item">
+              <svg [lucideIcon]="UserIcon" size="18"></svg>
+              <span>Mon Profil</span>
+            </a>
+
+            @if (currentUser()?.role === 'administrateur_central') {
+              <a routerLink="/admin/supervision" (click)="closeMenu()" class="menu-item">
+                <svg [lucideIcon]="Shield" size="18"></svg>
+                <span>Supervision Système</span>
+              </a>
+            }
+
+            @if (currentUser()?.role === 'referent') {
+              <a routerLink="/admin/agents" (click)="closeMenu()" class="menu-item">
+                <svg [lucideIcon]="Shield" size="18"></svg>
+                <span>Gestion des Agents</span>
+              </a>
+            }
+
+            <div class="menu-divider"></div>
+
+            <button type="button" (click)="logout()" class="menu-item menu-item--danger">
+              <svg [lucideIcon]="LogOut" size="18"></svg>
+              <span>Déconnexion</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>

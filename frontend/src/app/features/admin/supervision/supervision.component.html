@@ -1,0 +1,358 @@
+<app-header backUrl="/chat" title="Administration & Supervision"></app-header>
+
+
+<!-- Main Shell -->
+<main class="page-shell">
+
+  <!-- Toast Notification -->
+  <app-toast [message]="toastMessage()"></app-toast>
+
+  <!-- Navigation par onglets -->
+  <nav class="tab-nav" role="tablist" aria-label="Sections de supervision">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab() === tab.id"
+        [attr.aria-selected]="activeTab() === tab.id"
+        (click)="setTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+  <div class="tab-underline"></div>
+
+  <!-- ONGLET 1 : Tableau de bord -->
+  @if (activeTab() === 'dashboard') {
+    <section class="tab-content">
+      <h1 class="page-title">Vue d'ensemble</h1>
+
+      <!-- KPIs Grid -->
+      <div class="kpi-grid">
+        <app-kpi-card label="Directions actives" [value]="kpis()?.directionsActives ?? 3"></app-kpi-card>
+        <app-kpi-card label="Agents publiés" [value]="kpis()?.agentsPublies ?? 5"></app-kpi-card>
+        <app-kpi-card label="Utilisateurs actifs" [value]="kpis()?.utilisateursActifs ?? 142"></app-kpi-card>
+        <app-kpi-card label="Alertes de sécurité" [value]="kpis()?.alertesSecurite ?? 1" [danger]="true"></app-kpi-card>
+      </div>
+
+      <!-- Tableau Activités par Direction -->
+      <div class="data-table">
+        <table>
+          <thead>
+            <tr>
+              <th>DIRECTION</th>
+              <th>AGENT</th>
+              <th>STATUT</th>
+              <th>RÉFÉRENT</th>
+              <th>DERNIÈRE ACTIVITÉ</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (act of activities(); track act.id) {
+              <tr>
+                <td class="font-bold">{{ act.direction }}</td>
+                <td>{{ act.agentNom }}</td>
+                <td>
+                  <app-status-badge [status]="act.statut"></app-status-badge>
+                </td>
+                <td>{{ act.referentNom }}</td>
+                <td class="text-secondary">{{ act.derniereActivite }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ONGLET 2 : Comptes -->
+  @if (activeTab() === 'comptes') {
+    <section class="tab-content">
+      <div class="page-header-row">
+        <h1 class="page-title">Gestion des comptes</h1>
+        <button type="button" class="primary-btn" (click)="openCreateUserModal()">
+          <svg [lucideIcon]="Plus" size="18"></svg>
+          Créer un compte
+        </button>
+      </div>
+
+      <!-- Toolbar Filtres -->
+      <div class="filter-card">
+        <div class="search-box">
+          <svg [lucideIcon]="Search" size="16" class="search-icon"></svg>
+          <input
+            type="search"
+            [ngModel]="userSearch()"
+            (ngModelChange)="userSearch.set($event)"
+            placeholder="Rechercher un utilisateur..."
+          />
+        </div>
+        <div class="select-box">
+          <select [ngModel]="directionFilter()" (ngModelChange)="directionFilter.set($event)">
+            <option value="all">Toutes les directions</option>
+            <option value="RH">Ressources Humaines (RH)</option>
+            <option value="IT">Informatique (IT)</option>
+            <option value="Finance">Finance</option>
+            <option value="Commercial">Commercial</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table Utilisateurs -->
+      <div class="data-table">
+        <table>
+          <thead>
+            <tr>
+              <th>UTILISATEUR</th>
+              <th>DIRECTION</th>
+              <th>RÔLE</th>
+              <th>STATUT</th>
+              <th>DERNIÈRE CONNEXION</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of filteredUsers(); track user.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+                    <div class="user-details">
+                      <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
+                      <span class="user-email">{{ user.email }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="font-bold">{{ user.direction }}</td>
+                <td>
+                  <app-user-role-badge [role]="user.role"></app-user-role-badge>
+                </td>
+                <td>
+                  <app-status-badge status="Actif"></app-status-badge>
+                </td>
+                <td class="text-secondary">14 Mar 2026, 09:30</td>
+                <td class="actions-cell">
+                  <button type="button" class="action-icon" aria-label="Modifier le compte"><svg [lucideIcon]="Edit" size="16"></svg></button>
+                  <button type="button" class="action-icon" aria-label="Sécurité / Bloquer"><svg [lucideIcon]="Lock" size="16"></svg></button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ONGLET 3 : Sécurité -->
+  @if (activeTab() === 'securite') {
+    <section class="tab-content">
+      <div class="page-header-row">
+        <h1 class="page-title">Sécurité & journalisation</h1>
+        <button type="button" class="secondary-btn" (click)="exportLogs()">
+          <svg [lucideIcon]="Download" size="18"></svg>
+          Exporter les journaux
+        </button>
+      </div>
+
+      <!-- Bannière alerte -->
+      <div class="alert-banner">
+        <svg [lucideIcon]="ShieldAlert" size="20" class="alert-banner__icon"></svg>
+        <div class="alert-banner__text">
+          <strong>1 alerte de sécurité active nécessite votre attention</strong>
+          <a href="javascript:void(0)" class="alert-link">Voir le détail</a>
+        </div>
+      </div>
+
+      <!-- Toolbar Filtres -->
+      <div class="filter-card">
+        <div class="search-box">
+          <svg [lucideIcon]="Search" size="16" class="search-icon"></svg>
+          <input
+            type="search"
+            [ngModel]="logSearch()"
+            (ngModelChange)="logSearch.set($event)"
+            placeholder="Rechercher un événement..."
+          />
+        </div>
+        <div class="select-box">
+          <select [ngModel]="logNiveauFilter()" (ngModelChange)="logNiveauFilter.set($event)">
+            <option value="all">Tous les événements</option>
+            <option value="alerte">Alertes uniquement</option>
+            <option value="avertissement">Avertissements</option>
+            <option value="information">Informations</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table Audit Logs -->
+      <div class="data-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ÉVÉNEMENT</th>
+              <th>UTILISATEUR</th>
+              <th>DIRECTION</th>
+              <th>DATE & HEURE</th>
+              <th>NIVEAU</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of filteredLogs(); track log.id) {
+              <tr>
+                <td class="font-bold">{{ log.evenement }}</td>
+                <td>
+                  <div class="user-cell-mini">
+                    <div class="user-avatar-mini">{{ log.utilisateurInitiales }}</div>
+                    <span>{{ log.utilisateurNom }}</span>
+                  </div>
+                </td>
+                <td>{{ log.direction }}</td>
+                <td class="text-secondary">{{ log.dateHeure }}</td>
+                <td>
+                  <span class="log-level-badge" [ngClass]="getLogSeverityClass(log.niveau)">
+                    {{ log.niveau | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-row">Aucun événement enregistré.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ONGLET 4 : Paramètres -->
+  @if (activeTab() === 'parametres') {
+    <section class="tab-content tab-content--narrow">
+      <h1 class="page-title">Paramètres globaux</h1>
+
+      <div class="settings-stack">
+        <!-- Formats -->
+        <div class="settings-card">
+          <h2 class="settings-title">Formats de documents acceptés</h2>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settings().acceptedFormats.pdf" />
+              <span>PDF</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settings().acceptedFormats.word" />
+              <span>Word</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settings().acceptedFormats.excel" />
+              <span>Excel</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settings().acceptedFormats.powerpoint" />
+              <span>PowerPoint</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Confidentialité -->
+        <div class="settings-card settings-card--row">
+          <div class="settings-info">
+            <h2 class="settings-title">Politique de confidentialité par défaut</h2>
+          </div>
+          <div class="select-box select-box--medium">
+            <select [(ngModel)]="settings().defaultPrivacy">
+              <option value="Interne">Interne</option>
+              <option value="Confidentiel">Confidentiel</option>
+              <option value="Public">Public</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Rétention -->
+        <div class="settings-card settings-card--row">
+          <div class="settings-info">
+            <h2 class="settings-title">Durée de conservation des journaux</h2>
+          </div>
+          <div class="number-input-box">
+            <input type="number" [(ngModel)]="settings().logRetentionDays" min="1" max="365" />
+            <span class="unit-suffix">jours</span>
+          </div>
+        </div>
+
+        <!-- Notifications & Sauvegarde -->
+        <div class="settings-card">
+          <div class="toggle-row">
+            <div class="settings-info">
+              <h2 class="settings-title">Notifications de sécurité</h2>
+              <p class="settings-desc">Alerter l'administrateur en cas de connexion suspecte</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings().securityAlertsEnabled" />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+
+          <div class="settings-actions">
+            <button type="button" class="primary-btn" (click)="saveSettings()">
+              Enregistrer les paramètres
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+</main>
+
+@if (showCreateUserModal()) {
+  <app-modal title="Créer un nouvel utilisateur" (close)="closeCreateUserModal()">
+    <div modal-body>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Prénom *</label>
+          <input type="text" [(ngModel)]="newUser.prenom" placeholder="ex: Thomas" />
+        </div>
+        <div class="form-field">
+          <label>Nom *</label>
+          <input type="text" [(ngModel)]="newUser.nom" placeholder="ex: Kouassi" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Adresse e-mail professionnelle *</label>
+        <input type="email" [(ngModel)]="newUser.email" placeholder="t.kouassi@sahelys.com" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Direction</label>
+          <select [(ngModel)]="newUser.direction">
+            <option value="RH">Ressources Humaines (RH)</option>
+            <option value="IT">Informatique (IT)</option>
+            <option value="Finance">Finance</option>
+            <option value="Commercial">Commercial</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Rôle attribué</label>
+          <select [(ngModel)]="newUser.role">
+            <option value="collaborateur">Collaborateur</option>
+            <option value="referent">Référent</option>
+            <option value="administrateur_central">Administrateur Central</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div modal-footer>
+      <button type="button" class="secondary-btn" (click)="closeCreateUserModal()">Annuler</button>
+      <button type="button" class="primary-btn" (click)="submitCreateUser()">Créer le compte</button>
+    </div>
+  </app-modal>
+}

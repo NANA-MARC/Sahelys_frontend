@@ -1,0 +1,20 @@
+<div class="agent-card" (click)="select.emit(agent())">
+  <div class="card-header">
+    <div class="icon-container">
+      <svg [lucideIcon]="getIcon(agent().nom)" size="24"></svg>
+    </div>
+    <app-status-badge [status]="agent().statut === 'publié' ? 'Actif' : 'Inactif'"></app-status-badge>
+  </div>
+
+  <div class="card-body">
+    <h3 class="agent-name">{{ agent().nom }}</h3>
+    <p class="agent-description">{{ agent().description }}</p>
+  </div>
+
+  <div class="card-footer">
+    <span class="action-text">Reprendre la discussion</span>
+    <button type="button" class="action-btn" aria-label="Ouvrir la discussion">
+      <svg [lucideIcon]="ArrowRightIcon" size="18"></svg>
+    </button>
+  </div>
+</div>

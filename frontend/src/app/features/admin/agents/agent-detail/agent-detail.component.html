@@ -1,0 +1,277 @@
+<app-header backUrl="/admin/agents" title="Détail de l'Agent"></app-header>
+
+
+<ng-container *ngIf="agent$ | async as agent; else notFound">
+  <div class="page-shell">
+    <!-- Sous-header : identité de l'agent -->
+    <div class="agent-identity">
+      <button type="button" class="back-btn" (click)="goBack()" aria-label="Retour à la liste">
+        <svg [lucideIcon]="ArrowLeft" size="20"></svg>
+      </button>
+      <div class="agent-icon" [ngClass]="getIconClass(agent.id)">
+        <svg [lucideIcon]="getIconForAgent(agent.id)" size="28"></svg>
+      </div>
+      <div class="agent-identity__info">
+        <div class="agent-name-row">
+          <h1>{{ agent.nom }}</h1>
+          <span class="status-badge" [ngClass]="getStatusClass(agent.statut)">
+            <span class="badge-dot"></span>{{ agent.statut | titlecase }}
+          </span>
+        </div>
+        <p class="agent-direction">
+          {{
+            agent.direction === 'RH' ? 'Direction Ressources Humaines' : 'Direction Informatique'
+          }}
+        </p>
+      </div>
+      <div class="agent-identity__actions">
+        <a [routerLink]="['/chat/conversation', agent.id]" class="secondary-btn">Tester l'agent</a>
+        <button
+          *ngIf="agent.statut === 'publié'"
+          type="button"
+          class="danger-btn"
+          (click)="updateAgentStatut(agent, 'désactivé')"
+        >
+          Désactiver
+        </button>
+        <button
+          *ngIf="agent.statut !== 'publié'"
+          type="button"
+          class="primary-btn"
+          (click)="updateAgentStatut(agent, 'publié')"
+        >
+          Publier
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation onglets -->
+    <nav class="tab-nav" role="tablist" aria-label="Sections de l'agent">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab === tab.id"
+        [attr.aria-selected]="activeTab === tab.id"
+        (click)="setTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+    <div class="tab-underline"></div>
+
+    <!-- ONGLET : Général -->
+    <section *ngIf="activeTab === 'general'" class="tab-content">
+      <div class="info-card">
+        <h2 class="section-title">Informations générales</h2>
+        <div class="info-row">
+          <span class="info-label">Nom de l'agent</span>
+          <span class="info-value">{{ agent.nom }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Description</span>
+          <span class="info-value">{{ agent.description }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Direction</span>
+          <span class="info-value">{{ agent.direction }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Statut</span>
+          <span class="status-badge" [ngClass]="getStatusClass(agent.statut)">
+            <span class="badge-dot"></span>{{ agent.statut | titlecase }}
+          </span>
+        </div>
+        <div class="info-row info-row--full">
+          <span class="info-label">Instructions</span>
+          <p class="info-value info-instructions">{{ agent.instructions }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONGLET : Documents -->
+    <section *ngIf="activeTab === 'documents'" class="tab-content">
+      <div class="tab-toolbar">
+        <div class="search-box">
+          <svg [lucideIcon]="Search" size="16" class="search-icon"></svg>
+          <input
+            type="search"
+            [(ngModel)]="docSearch"
+            (ngModelChange)="updateDocSearch($event)"
+            placeholder="Rechercher un document..."
+          />
+        </div>
+        <label class="primary-btn upload-label-btn" for="doc-upload-tab">
+          <svg [lucideIcon]="Plus" size="18"></svg>
+          Ajouter des documents
+          <input
+            id="doc-upload-tab"
+            type="file"
+            multiple
+            class="sr-only"
+            (change)="onFileSelected($event, agent.id)"
+            accept=".pdf,.docx,.xlsx,.txt"
+          />
+        </label>
+      </div>
+
+      <div class="data-table" *ngIf="documents$ | async as docs">
+        <table>
+          <thead>
+            <tr>
+              <th>DOCUMENT</th>
+              <th>AJOUTÉ LE</th>
+              <th>STATUT</th>
+              <th>CONFIDENTIALITÉ</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of docs">
+              <td class="doc-name-cell">
+                <svg
+                  [lucideIcon]="FileText"
+                  size="16"
+                  class="doc-format-icon"
+                  [ngClass]="'format--' + doc.format"
+                ></svg>
+                {{ doc.nom }}
+              </td>
+              <td>{{ doc.dateAjout | date: 'dd MMM yyyy' }}</td>
+              <td>
+                <span class="statut-badge" [ngClass]="'statut--' + doc.statutIndexation">
+                  <span class="badge-dot"></span>
+                  {{
+                    doc.statutIndexation === 'en_attente'
+                      ? 'En attente'
+                      : doc.statutIndexation === 'en_cours'
+                        ? 'En cours'
+                        : doc.statutIndexation === 'indexe'
+                          ? 'Indexé'
+                          : 'Erreur'
+                  }}
+                </span>
+              </td>
+              <td>
+                <span class="confidentialite-badge">{{ doc.confidentialite | titlecase }}</span>
+              </td>
+              <td class="actions-cell">
+                <button type="button" class="action-icon" aria-label="Voir">
+                  <svg [lucideIcon]="Eye" size="16"></svg>
+                </button>
+                <button
+                  type="button"
+                  class="action-icon action-icon--danger"
+                  aria-label="Supprimer"
+                  (click)="deleteDocument(doc.id)"
+                >
+                  <svg [lucideIcon]="Trash2" size="16"></svg>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="docs.length === 0">
+              <td colspan="5" class="empty-row">Aucun document pour cet agent.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ONGLET : Accès -->
+    <section *ngIf="activeTab === 'acces'" class="tab-content">
+      <ng-container *ngIf="autorisations$ | async as autorisations">
+        <!-- Accès global direction -->
+        <div class="global-access-card">
+          <div class="global-access-info">
+            <span class="global-access-title"
+              >Autoriser toute la direction
+              {{ agent.direction === 'RH' ? 'Ressources Humaines' : 'Informatique' }}</span
+            >
+            <span class="global-access-desc"
+              >Tous les collaborateurs de cette direction pourront utiliser l'agent</span
+            >
+          </div>
+          <label class="toggle" aria-label="Autoriser toute la direction">
+            <input type="checkbox" [(ngModel)]="accesGlobal" />
+            <span class="toggle__track"></span>
+          </label>
+        </div>
+
+        <div class="divider-label">Ou gérez les accès individuels</div>
+
+        <div class="tab-toolbar">
+          <div class="search-box">
+            <svg [lucideIcon]="Search" size="16" class="search-icon"></svg>
+            <input
+              type="search"
+              [(ngModel)]="userSearch"
+              (ngModelChange)="updateUserSearch($event)"
+              placeholder="Rechercher un collaborateur..."
+            />
+          </div>
+        </div>
+
+        <div class="user-access-list" *ngIf="allUsers$ | async as users">
+          <div *ngFor="let user of users" class="user-access-row">
+            <div class="user-avatar">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+            <div class="user-info">
+              <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
+              <span class="user-email">{{ user.email }}</span>
+            </div>
+            <label class="toggle" [attr.aria-label]="'Accès pour ' + user.prenom + ' ' + user.nom">
+              <input
+                type="checkbox"
+                [checked]="isUserAuthorized(user.id, autorisations)"
+                (change)="toggleUserAccess(user.id, agent.id, autorisations)"
+              />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <!-- ONGLET : Qualité -->
+    <section *ngIf="activeTab === 'qualite'" class="tab-content">
+      <div class="quality-kpis">
+        <div class="kpi-card">
+          <span class="kpi-label">Questions posées ce mois</span>
+          <span class="kpi-value">{{ quality.questionsCount }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Taux de satisfaction</span>
+          <span class="kpi-value kpi-value--success">{{ quality.satisfaction }}%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Réponses signalées</span>
+          <span class="kpi-value kpi-value--warning">{{ quality.signalees }}</span>
+        </div>
+      </div>
+
+      <div class="feedback-list">
+        <div *ngFor="let fb of quality.feedbacks" class="feedback-row">
+          <div class="user-avatar feedback-avatar">{{ fb.initiale }}</div>
+          <div class="feedback-content">
+            <span class="feedback-question">{{ fb.question }}</span>
+            <span class="feedback-reponse">{{ fb.reponse }}</span>
+          </div>
+          <div class="feedback-meta">
+            <span class="feedback-date">{{ fb.date }}</span>
+            <span class="feedback-status" [ngClass]="'feedback--' + fb.statut">
+              <span class="badge-dot"></span>
+              {{ fb.statut === 'bonne' ? 'Bonne réponse' : 'Signalée' }}
+            </span>
+          </div>
+          <button type="button" class="action-icon" aria-label="Signaler">
+            <svg [lucideIcon]="Flag" size="16"></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</ng-container>
+
+<ng-template #notFound>
+  <div class="loading-state">Agent introuvable.</div>
+</ng-template>

@@ -1,0 +1,17 @@
+/* Charte Visuelle ADEN SAHELYS — Jetons CSS Globaux */
+:root {
+  --sahelys-primary: #0052cc;
+  --sahelys-primary-hover: #0041a3;
+  --sahelys-primary-light: #e1edff;
+  --sahelys-dark: #0a1c33;
+  --sahelys-light-bg: #eef3f8;
+  --sahelys-text-muted: #5a6e85;
+  --sahelys-border: #e1e7f0;
+  --sahelys-success: #10b981;
+  --sahelys-danger: #ef4444;
+  --sahelys-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Vous pouvez ajouter ici des variables SCSS ($var) ou des mixins globaux si besoin */
+$breakpoint-mobile: 768px;
+$breakpoint-tablet: 1024px;

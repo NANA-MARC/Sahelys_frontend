@@ -1,0 +1,36 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status--success {
+  background: #e3fcef;
+  color: var(--sahelys-success, #00875a); /* 00875a is close to success, var provides consistency */
+}
+
+.status--warning {
+  background: #fffae6;
+  color: #ff8b00;
+}
+
+.status--error {
+  background: #ffebe6;
+  color: var(--sahelys-danger, #de350b);
+}
+
+.status--neutral {
+  background: #f4f5f7;
+  color: #6b778c;
+}

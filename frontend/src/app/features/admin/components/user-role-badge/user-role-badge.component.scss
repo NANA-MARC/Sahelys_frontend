@@ -1,0 +1,22 @@
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  &.badge--admin {
+    background: var(--sahelys-dark, #0a1c33);
+    color: white;
+  }
+
+  &.badge--referent {
+    background: var(--sahelys-primary-light, #e8f1ff); /* E8F1FF is slightly lighter than primary-light #e1edff, but okay */
+    color: var(--sahelys-primary, #0052cc);
+  }
+
+  &.badge--collab {
+    background: #f1f5f9;
+    color: var(--sahelys-text-muted, #5a6e85);
+  }
+}
