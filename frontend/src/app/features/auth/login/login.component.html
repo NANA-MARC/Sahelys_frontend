@@ -9,20 +9,42 @@
       <p class="subtitle">Accédez à vos agents SAHELYS</p>
     </div>
 
+    <!-- Alerte de session expirée -->
+    @if (isSessionExpired()) {
+      <div class="warning-alert" role="alert" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #d97706; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+        Votre session a expiré. Veuillez vous reconnecter pour continuer.
+      </div>
+    }
+
+    <!-- Message d'erreur s'il y a un échec de connexion -->
+    @if (errorMessage()) {
+      <div class="error-alert" role="alert" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+        {{ errorMessage() }}
+      </div>
+    }
+
     <form class="login-form" (ngSubmit)="login()" #form="ngForm">
       <label class="field">
-        <span>Adresse email</span>
-        <input type="email" name="email" [(ngModel)]="formModel.email" required />
+        <span>Identifiant / Adresse email *</span>
+        <input 
+          type="text" 
+          name="email" 
+          [(ngModel)]="formModel.email" 
+          placeholder="Moussa KIENDREBEOGO ou email"
+          required 
+          [disabled]="isLoading()"
+        />
       </label>
 
       <label class="field">
-        <span>Mot de passe</span>
+        <span>Mot de passe *</span>
         <span class="password-field">
           <input
             [type]="showPassword ? 'text' : 'password'"
             name="password"
             [(ngModel)]="formModel.password"
             required
+            [disabled]="isLoading()"
           />
           <button
             type="button"
@@ -42,9 +64,13 @@
       <button
         type="submit"
         class="primary-btn"
-        [disabled]="!formModel.email || !formModel.password"
+        [disabled]="!formModel.email || !formModel.password || isLoading()"
       >
-        Se connecter
+        @if (isLoading()) {
+          <span>Connexion en cours...</span>
+        } @else {
+          <span>Se connecter</span>
+        }
       </button>
     </form>
   </div>

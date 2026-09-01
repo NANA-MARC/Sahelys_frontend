@@ -7,7 +7,7 @@
       </a>
     }
 
-    <a routerLink="/chat" class="brand-block" title="Accueil SahelysAgents">
+    <a [routerLink]="homeUrl" class="brand-block" title="Accueil SahelysAgents">
       <img src="/image/logo.jpeg" alt="SAHELYS" class="brand-logo" />
     </a>
   </div>
@@ -69,24 +69,22 @@
 
             <div class="menu-divider"></div>
 
-            <a routerLink="/chat/profile" (click)="closeMenu()" class="menu-item">
-              <svg [lucideIcon]="UserIcon" size="18"></svg>
-              <span>Mon Profil</span>
+            <a [routerLink]="homeUrl" (click)="closeMenu()" class="menu-item">
+              <svg [lucideIcon]="Bot" size="18"></svg>
+              <span>{{ currentUser()?.role === 'administrateur' || currentUser()?.role === 'referent' ? 'Gestion des Agents' : 'Espace Chat' }}</span>
             </a>
 
-            @if (currentUser()?.role === 'administrateur_central') {
+            @if (currentUser()?.role === 'administrateur') {
               <a routerLink="/admin/supervision" (click)="closeMenu()" class="menu-item">
                 <svg [lucideIcon]="Shield" size="18"></svg>
                 <span>Supervision Système</span>
               </a>
             }
 
-            @if (currentUser()?.role === 'referent') {
-              <a routerLink="/admin/agents" (click)="closeMenu()" class="menu-item">
-                <svg [lucideIcon]="Shield" size="18"></svg>
-                <span>Gestion des Agents</span>
-              </a>
-            }
+            <a routerLink="/chat/profile" (click)="closeMenu()" class="menu-item">
+              <svg [lucideIcon]="UserIcon" size="18"></svg>
+              <span>Mon Profil</span>
+            </a>
 
             <div class="menu-divider"></div>
 

@@ -63,31 +63,117 @@
 
     <!-- ONGLET : Général -->
     <section *ngIf="activeTab === 'general'" class="tab-content">
-      <div class="info-card">
-        <h2 class="section-title">Informations générales</h2>
-        <div class="info-row">
-          <span class="info-label">Nom de l'agent</span>
-          <span class="info-value">{{ agent.nom }}</span>
+      <form (ngSubmit)="saveAgentInfo(agent.id)" class="edit-agent-form">
+        <div *ngIf="saveSuccessMessage" class="alert-banner alert-banner--success">
+          <svg [lucideIcon]="Check" size="18"></svg>
+          {{ saveSuccessMessage }}
         </div>
-        <div class="info-row">
-          <span class="info-label">Description</span>
-          <span class="info-value">{{ agent.description }}</span>
+        <div *ngIf="saveErrorMessage" class="alert-banner alert-banner--danger">
+          {{ saveErrorMessage }}
         </div>
-        <div class="info-row">
-          <span class="info-label">Direction</span>
-          <span class="info-value">{{ agent.direction }}</span>
+
+        <div class="form-grid">
+          <!-- Carte 1: Identité et Direction -->
+          <div class="form-card">
+            <h2 class="form-card__title">
+              <svg [lucideIcon]="Bot" size="20" class="form-card__icon"></svg>
+              Identité de l'agent
+            </h2>
+
+            <div class="form-group">
+              <label for="edit-nom" class="form-label">Nom de l'agent *</label>
+              <input
+                id="edit-nom"
+                type="text"
+                class="form-control"
+                [(ngModel)]="editForm.nom"
+                name="nom"
+                required
+                placeholder="Ex: Agent Métier RH"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="edit-direction" class="form-label">
+                Direction rattachée
+                <span *ngIf="!isCentralAdmin" class="disabled-tag">(Accès restreint)</span>
+              </label>
+              <select
+                id="edit-direction"
+                class="form-control"
+                [class.form-control--disabled]="!isCentralAdmin"
+                [(ngModel)]="editForm.direction"
+                name="direction"
+                [disabled]="!isCentralAdmin"
+              >
+                <option *ngFor="let dir of directions" [value]="dir.value">
+                  {{ dir.label }}
+                </option>
+              </select>
+              <p *ngIf="!isCentralAdmin" class="field-hint field-hint--warning">
+                🔒 Seul un Administrateur Central peut réaffecter l'agent à une autre direction.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-statut" class="form-label">Statut de publication</label>
+              <select
+                id="edit-statut"
+                class="form-control"
+                [(ngModel)]="editForm.statut"
+                name="statut"
+              >
+                <option value="publié">Publié (Disponible en conversation)</option>
+                <option value="désactivé">Désactivé (Masqué)</option>
+                <option value="brouillon">Brouillon</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Carte 2: Description & Prompt RAG -->
+          <div class="form-card form-card--wide">
+            <h2 class="form-card__title">
+              <svg [lucideIcon]="FileText" size="20" class="form-card__icon"></svg>
+              Consignes & Instructions IA
+            </h2>
+
+            <div class="form-group">
+              <label for="edit-desc" class="form-label">Description fonctionnelle</label>
+              <textarea
+                id="edit-desc"
+                rows="3"
+                class="form-control"
+                [(ngModel)]="editForm.description"
+                name="description"
+                placeholder="Description sommaire du rôle et du périmètre métier..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-instructions" class="form-label">Instructions système (System Prompt) *</label>
+              <textarea
+                id="edit-instructions"
+                rows="7"
+                class="form-control code-font"
+                [(ngModel)]="editForm.instructions"
+                name="instructions"
+                required
+                placeholder="Instructions précises guidant la tonalité et les règles de réponse de l'agent IA..."
+              ></textarea>
+              <p class="field-hint">
+                💡 Ces instructions guident les réponses générées par le moteur RAG.
+              </p>
+            </div>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-label">Statut</span>
-          <span class="status-badge" [ngClass]="getStatusClass(agent.statut)">
-            <span class="badge-dot"></span>{{ agent.statut | titlecase }}
-          </span>
+
+        <div class="form-actions-bar">
+          <button type="submit" class="primary-btn save-btn" [disabled]="isSaving">
+            <svg [lucideIcon]="Check" size="18"></svg>
+            {{ isSaving ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
         </div>
-        <div class="info-row info-row--full">
-          <span class="info-label">Instructions</span>
-          <p class="info-value info-instructions">{{ agent.instructions }}</p>
-        </div>
-      </div>
+      </form>
     </section>
 
     <!-- ONGLET : Documents -->
@@ -184,13 +270,8 @@
         <!-- Accès global direction -->
         <div class="global-access-card">
           <div class="global-access-info">
-            <span class="global-access-title"
-              >Autoriser toute la direction
-              {{ agent.direction === 'RH' ? 'Ressources Humaines' : 'Informatique' }}</span
-            >
-            <span class="global-access-desc"
-              >Tous les collaborateurs de cette direction pourront utiliser l'agent</span
-            >
+            <span class="global-access-title">Autoriser toute la direction {{ agent.direction }}</span>
+            <span class="global-access-desc">Tous les collaborateurs de cette direction pourront utiliser l'agent</span>
           </div>
           <label class="toggle" aria-label="Autoriser toute la direction">
             <input type="checkbox" [(ngModel)]="accesGlobal" />
@@ -198,7 +279,15 @@
           </label>
         </div>
 
-        <div class="divider-label">Ou gérez les accès individuels</div>
+        <div class="divider-label">Gérer les accès individuels</div>
+
+        <!-- Bandeau info pour le référent en mode lecture seule partielle -->
+        <div *ngIf="!canManageUsers && autorisations.length === 0" class="info-banner">
+          ℹ️ Aucun collaborateur n'a encore été habilité à cet agent.
+        </div>
+        <div *ngIf="!canManageUsers && autorisations.length > 0" class="info-banner">
+          🔒 Vous consultez les accès accordés. Pour ajouter de nouveaux collaborateurs, contactez l'Administrateur Central.
+        </div>
 
         <div class="tab-toolbar">
           <div class="search-box">
@@ -212,21 +301,46 @@
           </div>
         </div>
 
-        <div class="user-access-list" *ngIf="allUsers$ | async as users">
+        <div class="user-access-list" *ngIf="resolvedUsers$ | async as users">
           <div *ngFor="let user of users" class="user-access-row">
-            <div class="user-avatar">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+            <div class="user-avatar">{{ user.initials }}</div>
             <div class="user-info">
-              <span class="user-name">{{ user.prenom }} {{ user.nom }}</span>
-              <span class="user-email">{{ user.email }}</span>
+              <span class="user-name">
+                {{ user.prenom ? user.prenom + ' ' + user.nom : user.nom }}
+              </span>
+              <span class="user-direction" *ngIf="user.direction">{{ user.direction }}</span>
+              <span class="user-direction user-direction--none" *ngIf="!user.direction">
+                ID : {{ user.id.slice(0, 12) }}…
+              </span>
             </div>
-            <label class="toggle" [attr.aria-label]="'Accès pour ' + user.prenom + ' ' + user.nom">
+            <span *ngIf="user.isAuthorized" class="access-badge access-badge--granted">
+              <span class="badge-dot"></span>Accès accordé
+            </span>
+            <label
+              *ngIf="canManageUsers"
+              class="toggle"
+              [attr.aria-label]="'Accès pour ' + user.nom"
+            >
               <input
                 type="checkbox"
-                [checked]="isUserAuthorized(user.id, autorisations)"
+                [checked]="user.isAuthorized"
                 (change)="toggleUserAccess(user.id, agent.id, autorisations)"
               />
               <span class="toggle__track"></span>
             </label>
+            <button
+              *ngIf="!canManageUsers && user.isAuthorized"
+              type="button"
+              class="danger-btn revoke-btn"
+              aria-label="Révoquer l'accès"
+              (click)="toggleUserAccess(user.id, agent.id, autorisations)"
+            >
+              Révoquer
+            </button>
+          </div>
+
+          <div *ngIf="users.length === 0 && canManageUsers" class="empty-state-row">
+            Aucun collaborateur trouvé dans cette direction.
           </div>
         </div>
       </ng-container>
@@ -234,40 +348,46 @@
 
     <!-- ONGLET : Qualité -->
     <section *ngIf="activeTab === 'qualite'" class="tab-content">
-      <div class="quality-kpis">
-        <div class="kpi-card">
-          <span class="kpi-label">Questions posées ce mois</span>
-          <span class="kpi-value">{{ quality.questionsCount }}</span>
+      <ng-container *ngIf="quality$ | async as quality">
+        <div class="quality-kpis">
+          <div class="kpi-card">
+            <span class="kpi-label">Questions posées</span>
+            <span class="kpi-value">{{ quality.questionsCount }}</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Taux de satisfaction</span>
+            <span class="kpi-value kpi-value--success">{{ quality.satisfaction }}%</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Réponses signalées</span>
+            <span class="kpi-value kpi-value--warning">{{ quality.signalees }}</span>
+          </div>
         </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Taux de satisfaction</span>
-          <span class="kpi-value kpi-value--success">{{ quality.satisfaction }}%</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Réponses signalées</span>
-          <span class="kpi-value kpi-value--warning">{{ quality.signalees }}</span>
-        </div>
-      </div>
 
-      <div class="feedback-list">
-        <div *ngFor="let fb of quality.feedbacks" class="feedback-row">
-          <div class="user-avatar feedback-avatar">{{ fb.initiale }}</div>
-          <div class="feedback-content">
-            <span class="feedback-question">{{ fb.question }}</span>
-            <span class="feedback-reponse">{{ fb.reponse }}</span>
+        <div class="feedback-list">
+          <div *ngFor="let fb of quality.feedbacks" class="feedback-row">
+            <div class="user-avatar feedback-avatar">{{ fb.initiale }}</div>
+            <div class="feedback-content">
+              <span class="feedback-question">{{ fb.question }}</span>
+              <span class="feedback-reponse">{{ fb.reponse }}</span>
+            </div>
+            <div class="feedback-meta">
+              <span class="feedback-date">{{ fb.date }}</span>
+              <span class="feedback-status" [ngClass]="'feedback--' + fb.statut">
+                <span class="badge-dot"></span>
+                {{ fb.statut }}
+              </span>
+            </div>
+            <button type="button" class="action-icon" aria-label="Signaler">
+              <svg [lucideIcon]="Flag" size="16"></svg>
+            </button>
           </div>
-          <div class="feedback-meta">
-            <span class="feedback-date">{{ fb.date }}</span>
-            <span class="feedback-status" [ngClass]="'feedback--' + fb.statut">
-              <span class="badge-dot"></span>
-              {{ fb.statut === 'bonne' ? 'Bonne réponse' : 'Signalée' }}
-            </span>
-          </div>
-          <button type="button" class="action-icon" aria-label="Signaler">
-            <svg [lucideIcon]="Flag" size="16"></svg>
-          </button>
+
+          <p *ngIf="quality.feedbacks.length === 0" class="empty-state">
+            Aucun feedback enregistré pour le moment.
+          </p>
         </div>
-      </div>
+      </ng-container>
     </section>
   </div>
 </ng-container>

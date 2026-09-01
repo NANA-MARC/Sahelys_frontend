@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { catchError, map, of } from 'rxjs';
 import {
   LucideDynamicIcon,
   LucideX,
@@ -12,10 +14,11 @@ import {
   LucideUserCheck,
 } from '@lucide/angular';
 
-import type { Agent, AgentStatus } from '../../../../shared/models/agent.model';
-import type { AgentDocument } from '../../../../shared/models/document.model';
+import type { AgentStatus } from '../../../../shared/models/agent.model';
 import type { Direction } from '../../../../shared/models/user.model';
-import { MockDataService } from '../../../../core/services/mock-data.service';
+import { AgentService } from '../../../../core/services/agent.service';
+import { DocumentService } from '../../../../core/services/document.service';
+import { AdminService } from '../../../../core/services/admin.service';
 import { SessionService } from '../../../../core/auth/session.service';
 
 type TonAgent = 'formel' | 'neutre' | 'convivial';
@@ -28,13 +31,21 @@ type TonAgent = 'formel' | 'neutre' | 'convivial';
   styleUrl: './agent-create.component.scss',
 })
 export class AgentCreateComponent {
-  private readonly mockDataService = inject(MockDataService);
+  private readonly agentService = inject(AgentService);
+  private readonly documentService = inject(DocumentService);
+  private readonly adminService = inject(AdminService);
   private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
   currentStep = 1;
   readonly totalSteps = 5;
+  isSaving = false;
+  errorMessage: string | null = null;
+
+  readonly currentUser = this.sessionService.currentUser();
+  readonly isCentralAdmin = this.currentUser?.role === 'administrateur';
+  readonly userDirection = this.currentUser?.direction ?? 'RH';
 
   readonly steps = [
     { num: 1, label: 'Nom & rôle' },
@@ -47,6 +58,8 @@ export class AgentCreateComponent {
   readonly directions: { value: Direction; label: string }[] = [
     { value: 'RH', label: 'Ressources Humaines' },
     { value: 'IT', label: 'Informatique' },
+    { value: 'Finance', label: 'Finance' },
+    { value: 'Commercial', label: 'Commercial' },
   ];
 
   readonly tons: { value: TonAgent; label: string }[] = [
@@ -55,13 +68,20 @@ export class AgentCreateComponent {
     { value: 'convivial', label: 'Convivial' },
   ];
 
-  readonly utilisateurs$ = this.mockDataService.getUsers();
+  readonly utilisateurs$ = this.adminService.getUsers().pipe(
+    map((users) => {
+      if (this.isCentralAdmin || !this.userDirection) return users;
+      const userDir = this.userDirection.trim().toLowerCase();
+      return users.filter((u) => u.direction && u.direction.trim().toLowerCase() === userDir);
+    }),
+    catchError(() => of([]))
+  );
 
   readonly wizardForm = this.fb.group({
     step1: this.fb.group({
       nom: ['', Validators.required],
       description: ['', Validators.required],
-      direction: [this.sessionService.getCurrentUser()?.direction ?? 'RH', Validators.required],
+      direction: [{ value: this.userDirection, disabled: !this.isCentralAdmin }, Validators.required],
     }),
     step2: this.fb.group({
       documents: [[] as File[]],
@@ -122,7 +142,6 @@ export class AgentCreateComponent {
     const docsControl = this.wizardForm.get('step2.documents');
     const currentFiles = docsControl?.value ?? [];
     
-    // Ajout des nouveaux fichiers sans doublons de nom
     const newFiles = Array.from(files).filter(
       (f) => !currentFiles.some((cf: File) => cf.name === f.name)
     );
@@ -159,48 +178,67 @@ export class AgentCreateComponent {
     return currentIds.includes(userId);
   }
 
-  // --- Étape 5 : publication ---
+  get cancelUrl(): string {
+    return '/admin/agents';
+  }
+
+  // --- Étape 5 : publication via API ---
   publishAgent(statut: AgentStatus): void {
-    const step1 = this.wizardForm.value.step1;
-    const step2 = this.wizardForm.value.step2;
-    const step4 = this.wizardForm.value.step4;
+    const rawForm = this.wizardForm.getRawValue();
+    const step1 = rawForm.step1;
+    const step2 = rawForm.step2;
+    const step3 = rawForm.step3;
+    const step4 = rawForm.step4;
 
-    if (!step1 || !step2 || !step4) return;
+    if (!step1 || !step4 || this.isSaving) return;
 
-    const direction = (step1.direction as Direction) || 'RH';
-    const newId = `agent-${direction.toLowerCase()}-${Date.now()}`;
-    
-    const agent: Agent = {
-      id: newId,
+    this.isSaving = true;
+    this.errorMessage = null;
+
+    const payload = {
       nom: step1.nom || '',
       description: step1.description || '',
-      instructions: step4.instructions || '',
-      direction,
-      statut,
+      system_prompt: step4.instructions || '',
     };
 
-    this.mockDataService.createAgent(agent);
+    // 1. Création de l'agent
+    this.agentService.createAgent(payload).subscribe({
+      next: (createdAgent) => {
+        const files = (step2?.documents as File[]) || [];
+        const userIds = (step3?.utilisateurIds as string[]) || [];
 
-    // Simuler l'ajout de documents à partir des objets File réels
-    const files = (step2.documents as File[]) || [];
-    files.forEach((file, i) => {
-      const doc: AgentDocument = {
-        id: `doc-new-${Date.now()}-${i}`,
-        agentId: newId,
-        nom: file.name,
-        format: file.name.split('.').pop() ?? 'pdf',
-        dateAjout: new Date().toISOString().split('T')[0],
-        statutIndexation: 'en_attente',
-        confidentialite: 'interne',
-      };
-      this.mockDataService.addDocument(doc);
+        // 2. Upload des documents RAG si présent
+        const uploadPromises = files.map((file) =>
+          this.documentService.uploadDocument(createdAgent.id, file).toPromise()
+        );
+
+        // 3. Attribution des accès spécifiques si présent
+        const grantPromises = userIds.map((uId) =>
+          this.agentService.grantAccess(createdAgent.id, uId).toPromise()
+        );
+
+        Promise.allSettled([...uploadPromises, ...grantPromises]).then((results) => {
+          this.isSaving = false;
+          const rejected = results.filter((r) => r.status === 'rejected');
+          if (rejected.length > 0) {
+            console.warn(`[AgentCreate] Agent créé mais ${rejected.length} opération(s) secondaire(s) ont échoué.`);
+          }
+          this.router.navigateByUrl(this.cancelUrl);
+        });
+      },
+      error: (err: HttpErrorResponse | Error) => {
+        this.isSaving = false;
+        if ('error' in err && err.error?.detail) {
+          const detail = err.error.detail;
+          this.errorMessage = typeof detail === 'string' ? detail : 'Accès refusé par le serveur backend (HTTP 403).';
+        } else {
+          this.errorMessage = err.message || 'Échec de la création de l\'agent.';
+        }
+      },
     });
-
-    this.router.navigateByUrl('/admin/agents');
   }
 
   get directionLabel(): string {
-    const dir = this.wizardForm.get('step1.direction')?.value;
-    return this.directions.find((d) => d.value === dir)?.label ?? '';
+    return this.userDirection;
   }
 }

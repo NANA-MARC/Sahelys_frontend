@@ -5,7 +5,8 @@ import { RouterLink } from '@angular/router';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { LucideDynamicIcon, LucideSearch, LucideBot, LucideUsers, LucideMonitor, LucideChevronRight } from '@lucide/angular';
 
-import { MockDataService } from '../../../../core/services/mock-data.service';
+import { AgentService } from '../../../../core/services/agent.service';
+import { ConversationService } from '../../../../core/services/conversation.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 
 @Component({
@@ -26,12 +27,14 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
   styleUrl: './conversations.component.scss',
 })
 export class ConversationsComponent {
-  private readonly mockDataService = inject(MockDataService);
-  readonly filterOptions$ = this.mockDataService.getAgents();
+  private readonly agentService = inject(AgentService);
+  private readonly conversationService = inject(ConversationService);
+
+  readonly filterOptions$ = this.agentService.getAgents();
 
   private readonly allConversations$ = combineLatest([
-    this.mockDataService.getConversations(),
-    this.mockDataService.getAgents(),
+    this.conversationService.getConversations(),
+    this.agentService.getAgents(),
   ]).pipe(
     map(([conversations, agents]) =>
       conversations.map((conversation) => ({

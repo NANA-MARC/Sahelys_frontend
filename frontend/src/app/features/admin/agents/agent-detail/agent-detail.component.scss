@@ -646,10 +646,64 @@ h1 {
   font-size: 0.9rem;
 }
 
-.user-email {
+.user-direction {
   display: block;
   font-size: 0.8rem;
   color: #5A6E85;
+  font-weight: 500;
+
+  &--none {
+    color: #b0bbc8;
+    font-style: italic;
+    font-weight: 400;
+  }
+}
+
+// --- Bandeau info référent ---
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fef9e7;
+  border: 1px solid #f9d949;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #7d5a00;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+// --- Badge accès accordé ---
+.access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex-shrink: 0;
+
+  &--granted {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+}
+
+// --- Bouton révoquer compact ---
+.revoke-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+// --- Ligne vide dans la liste ---
+.empty-state-row {
+  padding: 32px;
+  text-align: center;
+  color: #9ba5b0;
+  font-size: 0.9rem;
 }
 
 // --- Toggle switch ---
@@ -819,6 +873,165 @@ h1 {
   justify-content: center;
   padding: 80px;
   color: #5A6E85;
+}
+
+// --- Formulaire d'édition ---
+.edit-agent-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &--success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+  }
+
+  &--danger {
+    background: #fdecea;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-card {
+  background: white;
+  border: 1px solid #E1E7F0;
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0A1C33;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #F0F3F8;
+  }
+
+  &__icon {
+    color: #0052CC;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0A1C33;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.disabled-tag {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #c62828;
+  font-style: italic;
+}
+
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1.5px solid #D0D9E5;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  color: #0A1C33;
+  background: white;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #0052CC;
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
+  }
+
+  &::placeholder {
+    color: #9BA5B0;
+  }
+
+  &[disabled],
+  &--disabled {
+    background: #F4F6FA !important;
+    color: #8898AA !important;
+    border-color: #E1E7F0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.85;
+  }
+}
+
+textarea.form-control {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.code-font {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.88rem;
+  background: #FAFCFF;
+}
+
+.field-hint {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #5A6E85;
+  line-height: 1.4;
+
+  &--warning {
+    color: #b45309;
+    font-weight: 500;
+  }
+}
+
+.form-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.save-btn {
+  padding: 12px 24px;
+  font-size: 0.95rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 // --- Responsive ---

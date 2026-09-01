@@ -34,7 +34,7 @@ export const USERS_MOCK: User[] = [
     prenom: 'Moussa',
     email: 'moussa.diallo@sahelys.local',
     direction: 'IT',
-    role: 'administrateur_central',
+    role: 'administrateur',
     actif: true,
   },
 ];

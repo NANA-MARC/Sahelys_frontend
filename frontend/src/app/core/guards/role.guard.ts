@@ -17,11 +17,25 @@ export const roleGuard: CanActivateFn = (route) => {
     return router.createUrlTree(['/login']);
   }
 
-  if (requiredRole && currentUser.role !== requiredRole) {
+  const normalize = (r?: string) => {
+    if (!r) return '';
+    const norm = r
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+    if (norm.startsWith('referent')) return 'referent';
+    if (norm.startsWith('admin')) return 'administrateur';
+    return norm;
+  };
+
+  const userRole = normalize(currentUser.role);
+
+  if (requiredRole && userRole !== normalize(requiredRole)) {
     return router.createUrlTree(['/access-denied']);
   }
 
-  if (requiredRoles && !requiredRoles.includes(currentUser.role)) {
+  if (requiredRoles && !requiredRoles.some((r) => normalize(r) === userRole)) {
     return router.createUrlTree(['/access-denied']);
   }
 

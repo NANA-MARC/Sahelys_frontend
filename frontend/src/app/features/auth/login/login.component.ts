@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { RoleRouterService } from '../../../core/auth/role-router.service';
 import { SessionService } from '../../../core/auth/session.service';
@@ -18,8 +18,9 @@ type LoginForm = {
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly sessionService = inject(SessionService);
   private readonly roleRouterService = inject(RoleRouterService);
 
@@ -29,36 +30,38 @@ export class LoginComponent {
   };
 
   showPassword = false;
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly isSessionExpired = signal(false);
+
+  ngOnInit(): void {
+    const expired = this.route.snapshot.queryParamMap.get('expired');
+    if (expired === 'true') {
+      this.isSessionExpired.set(true);
+    }
+  }
 
   login(): void {
     const email = this.formModel.email.trim();
+    const password = this.formModel.password;
 
-    if (!email) {
+    if (!email || !password) {
       return;
     }
 
-    this.mockLogin(this.getRoleFromEmail(email));
-  }
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.isSessionExpired.set(false);
 
-  mockLogin(role: 'collaborateur' | 'referent' | 'administrateur_central'): void {
-    this.sessionService.setUser({
-      id: `demo-${role}`,
-      role,
-      direction: role === 'administrateur_central' ? 'IT' : 'RH',
+    this.sessionService.login(email, password).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.roleRouterService.redirectByRole();
+      },
+      error: (err: Error) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err.message || 'Échec de la connexion.');
+      },
     });
-
-    this.roleRouterService.redirectByRole();
-  }
-
-  private getRoleFromEmail(email: string): 'collaborateur' | 'referent' | 'administrateur_central' {
-    if (email.toLowerCase().includes('referent')) {
-      return 'referent';
-    }
-
-    if (email.toLowerCase().includes('admin')) {
-      return 'administrateur_central';
-    }
-
-    return 'collaborateur';
   }
 }

@@ -67,6 +67,8 @@
     </section>
   }
 
+
+
   <!-- ONGLET 2 : Comptes -->
   @if (activeTab() === 'comptes') {
     <section class="tab-content">
@@ -325,8 +327,13 @@
       </div>
 
       <div class="form-field">
-        <label>Adresse e-mail professionnelle *</label>
+        <label>Adresse e-mail professionnelle</label>
         <input type="email" [(ngModel)]="newUser.email" placeholder="t.kouassi@sahelys.com" />
+      </div>
+
+      <div class="form-field">
+        <label>Mot de passe initial *</label>
+        <input type="password" [(ngModel)]="newUser.mot_de_passe" placeholder="••••••••" required />
       </div>
 
       <div class="form-row">
@@ -344,7 +351,7 @@
           <select [(ngModel)]="newUser.role">
             <option value="collaborateur">Collaborateur</option>
             <option value="referent">Référent</option>
-            <option value="administrateur_central">Administrateur Central</option>
+            <option value="administrateur">Administrateur Central</option>
           </select>
         </div>
       </div>

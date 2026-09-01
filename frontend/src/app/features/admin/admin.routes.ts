@@ -9,29 +9,25 @@ export const adminRoutes: Routes = [
   },
   {
     path: 'agents',
-    canActivate: [roleGuard],
-    data: { roles: ['referent', 'administrateur_central'] },
     loadComponent: () =>
       import('./agents/agents-list/agents-list.component').then((m) => m.AgentsListComponent),
   },
   {
     path: 'agents/create',
     canActivate: [roleGuard],
-    data: { roles: ['referent', 'administrateur_central'] },
+    data: { role: 'administrateur' },
     loadComponent: () =>
       import('./agents/agent-create/agent-create.component').then((m) => m.AgentCreateComponent),
   },
   {
     path: 'agent/:id',
-    canActivate: [roleGuard],
-    data: { roles: ['referent', 'administrateur_central'] },
     loadComponent: () =>
       import('./agents/agent-detail/agent-detail.component').then((m) => m.AgentDetailComponent),
   },
   {
     path: 'supervision',
     canActivate: [roleGuard],
-    data: { role: 'administrateur_central' },
+    data: { role: 'administrateur' },
     loadComponent: () =>
       import('./supervision/supervision.component').then((m) => m.SupervisionComponent),
   },

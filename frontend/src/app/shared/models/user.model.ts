@@ -1,4 +1,4 @@
-export type UserRole = 'collaborateur' | 'referent' | 'administrateur_central';
+export type UserRole = 'collaborateur' | 'referent' | 'administrateur';
 
 export type Direction = 'RH' | 'IT' | 'Finance' | 'Commercial';
 

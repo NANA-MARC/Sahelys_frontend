@@ -1,6 +1,6 @@
 import type { Direction } from './user.model';
 
-export type AgentStatus = 'brouillon' | 'publié' | 'désactivé';
+export type AgentStatus = 'brouillon' | 'publié' | 'désactivé' | 'actif' | 'inactif';
 
 export interface Agent {
   id: string;

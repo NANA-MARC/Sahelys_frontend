@@ -26,52 +26,51 @@
     </div>
 
     <nav class="conversation-history" aria-label="Historique des conversations">
-      <ng-container *ngIf="sidebarConversations$ | async as conversations">
-        <a
-          class="history-item"
-          *ngFor="let conversation of conversations"
-          [class.history-item--active]="(conversation$ | async)?.id === conversation.id"
-          href="#messages"
-          (click)="selectConversation(conversation.id)"
-        >
-          <span>{{ conversation.titre }}</span>
-          <small>{{ conversation.misAJourLe | date: 'dd/MM' }}</small>
-        </a>
-      </ng-container>
+      @if (sidebarConversations$ | async; as conversations) {
+        @for (conversation of conversations; track conversation.id) {
+          <button
+            type="button"
+            class="history-item"
+            [class.history-item--active]="(conversation$ | async)?.id === conversation.id"
+            (click)="selectConversation(conversation.id)"
+          >
+            <span>{{ conversation.titre }}</span>
+            <small>{{ conversation.misAJourLe | date: 'dd/MM' }}</small>
+          </button>
+        }
+      }
     </nav>
   </aside>
 
   <section class="chat-panel">
-    <section
-      id="messages"
-      class="messages"
-      *ngIf="conversation$ | async as conversation; else emptyState"
-    >
-      @for (message of conversation.messages; track message.id) {
-        <app-message-bubble
-          [message]="message"
-          [agentName]="(agent$ | async)?.nom || 'Agent IA'"
-        ></app-message-bubble>
-      }
+    @if (activeMessages().length > 0 || streamedAnswer()) {
+      <section id="messages" class="messages">
+        @for (message of activeMessages(); track message.id) {
+          <app-message-bubble
+            [message]="message"
+            [agentName]="(agent$ | async)?.nom || 'Agent IA'"
+          ></app-message-bubble>
+        }
 
-      <article class="message message--agent" *ngIf="streamedAnswer">
-        <span class="message-avatar" aria-hidden="true">
-          <svg [lucideIcon]="Bot" size="20"></svg>
-        </span>
-        <div class="message-body">
-          <span class="author">Agent · {{ isStreaming ? 'répond...' : 'réponse complète' }}</span>
-          <p>{{ streamedAnswer }}</p>
-        </div>
-      </article>
-    </section>
-
-    <ng-template #emptyState>
+        @if (streamedAnswer()) {
+          <article class="message message--agent">
+            <span class="message-avatar" aria-hidden="true">
+              <svg [lucideIcon]="Bot" size="20"></svg>
+            </span>
+            <div class="message-body">
+              <span class="author">Agent · {{ isStreaming() ? 'répond...' : 'réponse complète' }}</span>
+              <p>{{ streamedAnswer() }}</p>
+            </div>
+          </article>
+        }
+      </section>
+    } @else {
       <div class="empty-chat-state">
         <svg [lucideIcon]="MessageSquare" size="48" class="empty-icon"></svg>
         <h3>Discutez avec {{ (agent$ | async)?.nom || 'cet Agent' }}</h3>
         <p>Posez vos questions liées à la documentation de la direction {{ (agent$ | async)?.direction }}.</p>
       </div>
-    </ng-template>
+    }
 
     <!-- Formulaire d'envoi avec pièces jointes -->
     <div class="composer-container">
@@ -113,7 +112,7 @@
         <button
           type="submit"
           aria-label="Envoyer"
-          [disabled]="(!draft.trim() && attachedFiles.length === 0) || isStreaming"
+          [disabled]="(!draft.trim() && attachedFiles.length === 0) || isStreaming()"
         >
           <svg [lucideIcon]="Send" size="18"></svg>
         </button>

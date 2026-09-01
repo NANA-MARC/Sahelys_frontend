@@ -1,7 +1,7 @@
-import { AsyncPipe, NgClass, NgFor, NgIf, TitleCasePipe } from '@angular/common';
+import { AsyncPipe, NgClass, TitleCasePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, catchError, of, switchMap, forkJoin } from 'rxjs';
 import {
   LucideDynamicIcon,
   LucidePlus,
@@ -11,11 +11,13 @@ import {
   LucideBot,
   LucideLayoutGrid,
   LucideSettings2,
+  LucideMessageSquare,
+  LucideEye,
 } from '@lucide/angular';
 
 import type { Agent } from '../../../../shared/models/agent.model';
-import type { AgentDocument } from '../../../../shared/models/document.model';
-import { MockDataService } from '../../../../core/services/mock-data.service';
+import { AgentService } from '../../../../core/services/agent.service';
+import { DocumentService } from '../../../../core/services/document.service';
 import { SessionService } from '../../../../core/auth/session.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 
@@ -28,8 +30,6 @@ type StatusFilter = 'tous' | 'publié' | 'brouillon' | 'désactivé';
   imports: [
     AsyncPipe,
     NgClass,
-    NgFor,
-    NgIf,
     RouterLink,
     LucideDynamicIcon,
     TitleCasePipe,
@@ -39,15 +39,19 @@ type StatusFilter = 'tous' | 'publié' | 'brouillon' | 'désactivé';
   styleUrl: './agents-list.component.scss',
 })
 export class AgentsListComponent implements OnInit {
-  private readonly mockDataService = inject(MockDataService);
+  private readonly agentService = inject(AgentService);
+  private readonly documentService = inject(DocumentService);
   private readonly sessionService = inject(SessionService);
 
   private readonly statusFilter$ = new BehaviorSubject<StatusFilter>('tous');
   statusFilter: StatusFilter = 'tous';
 
   readonly currentUser = this.sessionService.getCurrentUser();
-  readonly directionLabel =
-    this.currentUser?.direction === 'RH' ? 'Direction Ressources Humaines' : 'Direction Informatique';
+  readonly isAdmin = this.currentUser?.role === 'administrateur';
+  readonly backUrl = this.isAdmin ? '/admin/supervision' : '/chat';
+  readonly directionLabel = this.isAdmin
+    ? 'Toutes les directions'
+    : `Direction ${this.currentUser?.direction || 'Générale'}`;
 
   readonly statusOptions: { value: StatusFilter; label: string }[] = [
     { value: 'tous', label: 'Tous' },
@@ -63,27 +67,35 @@ export class AgentsListComponent implements OnInit {
   readonly Bot = LucideBot;
   readonly LayoutGrid = LucideLayoutGrid;
   readonly Settings2 = LucideSettings2;
+  readonly MessageSquare = LucideMessageSquare;
+  readonly Eye = LucideEye;
 
   readonly agents$: Observable<AgentWithCount[]> = combineLatest([
-    this.mockDataService.getAgents(),
-    this.mockDataService.getDocuments(),
+    this.agentService.getAgents().pipe(catchError(() => of([]))),
     this.statusFilter$,
   ]).pipe(
-    map(([agents, documents, statusFilter]) => {
-      const direction = this.currentUser?.direction;
+    switchMap(([agents, statusFilter]) => {
+      const userDir = this.currentUser?.direction?.trim().toLowerCase();
+      const role = this.currentUser?.role?.trim().toLowerCase();
+      const isCentralAdmin = role === 'administrateur' || role === 'admin';
 
-      return agents
-        .filter((agent) => {
-          const matchesDirection = !direction || agent.direction === direction;
-          const matchesStatus = statusFilter === 'tous' || agent.statut === statusFilter;
-          return matchesDirection && matchesStatus;
-        })
-        .map((agent) => ({
-          ...agent,
-          docCount: (documents as AgentDocument[]).filter(
-            (d) => d.agentId === agent.id && d.statutIndexation === 'indexe',
-          ).length,
-        }));
+      const filtered = agents.filter((agent) => {
+        const agentDir = agent.direction?.trim().toLowerCase();
+        const matchesDirection = isCentralAdmin || !userDir || agentDir === userDir;
+        const matchesStatus = statusFilter === 'tous' || agent.statut === statusFilter;
+        return matchesDirection && matchesStatus;
+      });
+
+      if (filtered.length === 0) return of([]);
+
+      return forkJoin(
+        filtered.map((agent) =>
+          this.documentService.getDocuments(agent.id).pipe(
+            map((docs) => ({ ...agent, docCount: docs.length })),
+            catchError(() => of({ ...agent, docCount: 0 }))
+          )
+        )
+      );
     }),
   );
 
@@ -108,10 +120,16 @@ export class AgentsListComponent implements OnInit {
 
   getStatusClass(statut: string): string {
     switch (statut) {
-      case 'publié':     return 'badge--publie';
-      case 'brouillon':  return 'badge--brouillon';
-      case 'désactivé':  return 'badge--desactive';
-      default:           return 'badge--brouillon';
+      case 'publié':
+      case 'actif':
+        return 'badge--publie';
+      case 'brouillon':
+        return 'badge--brouillon';
+      case 'désactivé':
+      case 'inactif':
+        return 'badge--desactive';
+      default:
+        return 'badge--brouillon';
     }
   }
 }

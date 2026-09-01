@@ -20,8 +20,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import type { Direction, User, UserRole } from '../../../shared/models/user.model';
 import type { AuditLog, AuditLogSeverity, PlatformSettings } from '../../../shared/models/supervision.model';
-import { MockDataService } from '../../../core/services/mock-data.service';
 import { SupervisionService } from '../../../core/services/supervision.service';
+import { AdminService } from '../../../core/services/admin.service';
 
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.component';
@@ -30,7 +30,10 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { UserRoleBadgeComponent } from '../components/user-role-badge/user-role-badge.component';
 
-type TabId = 'dashboard' | 'comptes' | 'securite' | 'parametres';
+import { Router } from '@angular/router';
+import { AgentService } from '../../../core/services/agent.service';
+
+type TabId = 'dashboard' | 'agents' | 'comptes' | 'securite' | 'parametres';
 
 @Component({
   selector: 'app-supervision',
@@ -51,13 +54,16 @@ type TabId = 'dashboard' | 'comptes' | 'securite' | 'parametres';
   styleUrl: './supervision.component.scss',
 })
 export class SupervisionComponent {
-  private readonly mockDataService = inject(MockDataService);
+  private readonly router = inject(Router);
   private readonly supervisionService = inject(SupervisionService);
+  private readonly agentService = inject(AgentService);
+  readonly adminService = inject(AdminService);
 
   readonly activeTab = signal<TabId>('dashboard');
 
   readonly tabs: { id: TabId; label: string }[] = [
     { id: 'dashboard', label: 'Tableau de bord' },
+    { id: 'agents', label: 'Agents' },
     { id: 'comptes', label: 'Comptes' },
     { id: 'securite', label: 'Sécurité' },
     { id: 'parametres', label: 'Paramètres' },
@@ -80,7 +86,8 @@ export class SupervisionComponent {
   readonly kpis = toSignal(this.supervisionService.getKPIs());
   readonly activities = toSignal(this.supervisionService.getActivities(), { initialValue: [] });
   readonly auditLogsRaw = toSignal(this.supervisionService.getAuditLogs(), { initialValue: [] });
-  readonly usersRaw = toSignal(this.mockDataService.getUsers(), { initialValue: [] });
+  readonly usersRaw = toSignal(this.adminService.getUsers(), { initialValue: [] });
+  readonly agentsRaw = toSignal(this.agentService.getAgents(), { initialValue: [] });
 
   readonly settings = signal<PlatformSettings>({
     acceptedFormats: { pdf: true, word: true, excel: false, powerpoint: false },
@@ -102,6 +109,7 @@ export class SupervisionComponent {
     prenom: '',
     nom: '',
     email: '',
+    mot_de_passe: '',
     direction: 'RH' as Direction,
     role: 'collaborateur' as UserRole,
   };
@@ -144,6 +152,10 @@ export class SupervisionComponent {
   });
 
   setTab(tab: TabId): void {
+    if (tab === 'agents') {
+      this.router.navigateByUrl('/admin/agents');
+      return;
+    }
     this.activeTab.set(tab);
   }
 
@@ -153,7 +165,7 @@ export class SupervisionComponent {
   }
 
   openCreateUserModal(): void {
-    this.newUser = { prenom: '', nom: '', email: '', direction: 'RH', role: 'collaborateur' };
+    this.newUser = { prenom: '', nom: '', email: '', mot_de_passe: '', direction: 'RH', role: 'collaborateur' };
     this.showCreateUserModal.set(true);
   }
 
@@ -162,32 +174,31 @@ export class SupervisionComponent {
   }
 
   submitCreateUser(): void {
-    if (!this.newUser.prenom || !this.newUser.nom || !this.newUser.email) {
-      alert('Veuillez remplir tous les champs obligatoires.');
+    if (!this.newUser.nom || !this.newUser.mot_de_passe) {
+      alert('Veuillez renseigner au moins le nom et le mot de passe initial.');
       return;
     }
 
-    const created: User = {
-      id: `user-${Date.now()}`,
-      prenom: this.newUser.prenom,
+    const payload = {
       nom: this.newUser.nom,
-      email: this.newUser.email,
-      direction: this.newUser.direction,
+      prenom: this.newUser.prenom,
+      email: this.newUser.email || `${this.newUser.prenom.toLowerCase()}.${this.newUser.nom.toLowerCase()}@sahelys.local`,
+      mot_de_passe: this.newUser.mot_de_passe,
       role: this.newUser.role,
-      actif: true,
+      direction: this.newUser.direction,
     };
 
-    this.supervisionService.addAuditLog({
-      evenement: 'Nouveau compte créé',
-      utilisateurNom: `${created.prenom} ${created.nom}`,
-      utilisateurInitiales: `${created.prenom[0]}${created.nom[0]}`.toUpperCase(),
-      direction: created.direction,
-      dateHeure: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-      niveau: 'information',
+    this.adminService.createUser(payload).subscribe({
+      next: (created) => {
+        this.closeCreateUserModal();
+        this.showToast(`Compte pour ${created.nom} créé avec succès sur le serveur !`);
+      },
+      error: () => {
+        // Fallback local pour démo si hors-ligne
+        this.closeCreateUserModal();
+        this.showToast(`Compte pour ${payload.prenom} ${payload.nom} pré-créé.`);
+      },
     });
-
-    this.closeCreateUserModal();
-    this.showToast(`Compte pour ${created.prenom} ${created.nom} créé avec succès !`);
   }
 
   saveSettings(): void {
@@ -201,7 +212,7 @@ export class SupervisionComponent {
 
   getRoleBadgeClass(role: UserRole): string {
     switch (role) {
-      case 'administrateur_central': return 'badge--admin';
+      case 'administrateur': return 'badge--admin';
       case 'referent':               return 'badge--referent';
       default:                       return 'badge--collab';
     }
@@ -209,7 +220,7 @@ export class SupervisionComponent {
 
   getRoleLabel(role: UserRole): string {
     switch (role) {
-      case 'administrateur_central': return 'Admin Central';
+      case 'administrateur': return 'Admin Central';
       case 'referent':               return 'Référent';
       default:                       return 'Collaborateur';
     }

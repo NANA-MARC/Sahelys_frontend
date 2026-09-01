@@ -12,7 +12,7 @@ export class UserRoleBadgeComponent {
 
   getRoleLabel(r: UserRole): string {
     switch (r) {
-      case 'administrateur_central': return 'Admin Central';
+      case 'administrateur': return 'Admin Central';
       case 'referent':               return 'Référent';
       default:                       return 'Collaborateur';
     }

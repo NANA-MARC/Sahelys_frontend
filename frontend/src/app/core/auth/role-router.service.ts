@@ -20,19 +20,18 @@ export class RoleRouterService {
       return;
     }
 
-    switch (currentUser.role) {
-      case 'collaborateur':
-        this.router.navigateByUrl('/chat');
-        break;
-      case 'referent':
-        this.router.navigateByUrl('/admin/agents');
-        break;
-      case 'administrateur_central':
-        this.router.navigateByUrl('/admin/supervision');
-        break;
-      default:
-        this.router.navigateByUrl('/chat');
-        break;
+    const rawRole = (currentUser.role || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    if (rawRole.includes('referent')) {
+      this.router.navigateByUrl('/admin/agents');
+    } else if (rawRole.includes('admin')) {
+      this.router.navigateByUrl('/admin/supervision');
+    } else {
+      this.router.navigateByUrl('/chat');
     }
   }
 }

@@ -12,6 +12,8 @@ import {
   LucideShield,
   LucideArrowLeft,
   LucideChevronDown,
+  LucideBot,
+  LucideMessageSquare,
 } from '@lucide/angular';
 import { SessionService } from '../../../core/auth/session.service';
 
@@ -37,6 +39,8 @@ export class HeaderComponent {
   readonly Shield = LucideShield;
   readonly ArrowLeft = LucideArrowLeft;
   readonly ChevronDown = LucideChevronDown;
+  readonly Bot = LucideBot;
+  readonly MessageSquare = LucideMessageSquare;
 
   // Inputs
   readonly showSearch = input<boolean>(true);
@@ -57,13 +61,13 @@ export class HeaderComponent {
   get initials(): string {
     const user = this.currentUser();
     if (!user) return 'U';
-    return user.role === 'administrateur_central' ? 'AC' : user.role === 'referent' ? 'REF' : 'CO';
+    return user.role === 'administrateur' ? 'AC' : user.role === 'referent' ? 'REF' : 'CO';
   }
 
   get userRoleLabel(): string {
     const role = this.currentUser()?.role;
     switch (role) {
-      case 'administrateur_central':
+      case 'administrateur':
         return 'Admin Central';
       case 'referent':
         return 'Référent Direction';
@@ -76,6 +80,11 @@ export class HeaderComponent {
 
   get userDirection(): string {
     return this.currentUser()?.direction || 'SAHELYS';
+  }
+
+  get homeUrl(): string {
+    const role = this.currentUser()?.role;
+    return role === 'administrateur' || role === 'referent' ? '/admin/agents' : '/chat';
   }
 
   onSearchInput(event: Event): void {
