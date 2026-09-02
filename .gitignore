@@ -59,3 +59,23 @@ venv/
 *.log
 *.tmp
 *.temp 
+# Dossiers de travail personnels, non liés au frontend
+.claude/
+.continue/
+.codex/
+.agents/
+SahelysAgents-feature-integration-backend-rag*/
+
+# Fichiers d'environnement de dev personnels (vides, générés par l'IDE/outils)
+.gitconfig
+.gitmodules
+.idea
+.mcp.json
+.ripgreprc
+
+# VSCode — settings personnels (on garde launch.json/tasks.json/mcp.json du projet, déjà suivis)
+.vscode/extensions.json
+.vscode/settings.json
+
+# Dossier frontend/ historique (vidé, ne doit plus jamais être recréé par erreur)
+frontend/
