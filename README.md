@@ -1,102 +1,59 @@
-# SahelysAgents
+# Frontend
 
-SahelysAgents est la plateforme interne de SAHELYS permettant à chaque direction (RH, Finance, Commercial, IT, Juridique, Opérations, DG) de créer et de gérer ses propres agents IA conversationnels, alimentés par ses documents internes, sans avoir besoin d’écrire de code.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
 
----
+## Development server
 
-## 👥 Équipe et Répartition des Rôles
-
-| Membre | Périmètre / Domaine d'intervention | Branche Git | Dossier principal |
-| :--- | :--- | :--- | :--- |
-| **Marc NANA** | Frontend | `frontend` | `frontend/` |
-| **Fabiana YANOGO** | Données & RAG | `donnees` | `donnees/` |
-| **Moussa KIENDREBEOGO** | Backend & IA | `backend`, `ia` | `backend/`, `ia/` |
-
----
-
-## 🏗️ Structure du Projet
-
-* **`main`** : Branche principale (version stable et livrable en production).
-* **`develop`** : Branche d'intégration (centralise et teste les modules avant déploiement sur main).
-* **`frontend`** : Branche isolée contenant uniquement le dossier `frontend/`.
-* **`backend`** : Branche isolée contenant uniquement le dossier `backend/`.
-* **`ia`** : Branche isolée contenant uniquement le dossier `ia/`.
-* **`donnees`** : Branche isolée contenant uniquement le dossier `donnees/`.
-
-```text
-SahelysAgents/
-├── frontend/        # (Marc NANA)
-├── backend/         # (Moussa KIENDREBEOGO)
-├── ia/              # (Moussa KIENDREBEOGO & Fabiana YANOGO)
-├── donnees/         # (Fabiana YANOGO)
-└── docs/            # Documentation technique du projet
-```
-
----
-
-## 🚀 Guide de Démarrage Rapide pour l'Équipe
-
-### 1. Cloner le projet
-Chaque membre commence par cloner le dépôt :
-```bash
-git clone https://github.com/MoussaKIENDREBEOGO/SahelysAgents.git
-cd SahelysAgents
-```
-
-### 2. Basculer sur sa branche de travail
-
-Chaque membre doit se positionner sur sa branche dédiée avant de coder :
-
-- **Marc NANA (Frontend)** :
-  ```bash
-  git checkout frontend
-  ```
-- **Fabiana YANOGO (Données & RAG)** :
-  ```bash
-  git checkout donnees
-  ```
-- **Moussa KIENDREBEOGO (Backend & IA)** :
-  ```bash
-  git checkout backend
-  # ou git checkout ia
-  ```
-
-### 3. Développer et publier ses modifications
-
-Travaillez exclusivement dans le dossier de votre branche, puis publiez vos modifications :
+To start a local development server, run:
 
 ```bash
-# 1. Ajouter ses modifications
-git add .
-
-# 2. Créer un commit explicite
-git commit -m "feat: description de ma fonctionnalité"
-
-# 3. Pousser la branche sur GitHub
-git push origin <votre-branche>
+ng serve
 ```
 
----
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## 🛡️ Rôle de l'Administrateur
+## Code scaffolding
 
-La branche `develop` sert de zone de recettes et de tests. La branche `main` centralise le code consolidé et stable de tous les modules. Seul l'**Administrateur** valide et fusionne les branches sur `develop` puis sur `main`.
-
-> 💡 **Note sur le Workflow d'Intégration :**
-> 1. Chaque développeur pousse son travail exclusivement sur sa propre branche (`frontend`, `donnees`, `backend`, `ia`).
-> 2. L'Administrateur révisera et fusionnera les branches de travail vers **`develop`** pour tester l'ensemble du projet.
-> 3. Après validation globale des tests sur **`develop`**, l'Administrateur fusionnera **`develop`** vers **`main`** (version finale en production).
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
-# 1. Mettre à jour l'intégration sur develop
-git checkout develop
-git pull origin develop
-git merge <branche-du-developpeur>
-git push origin develop
-
-# 2. Après validation des tests, fusionner sur main (production)
-git checkout main
-git pull origin main
-git merge develop
-git push origin main
+ng generate component component-name
 ```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
