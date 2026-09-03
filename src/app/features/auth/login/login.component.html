@@ -2,8 +2,7 @@
   <div class="login-card">
     <div class="login-card__header">
       <div class="brand" aria-label="SAHELYS">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">SAHELYS</span>
+        <img src="/image/logo.jpeg" alt="SAHELYS" class="brand-logo" width="180" height="36" />
       </div>
       <h1>Connexion</h1>
       <p class="subtitle">Accédez à vos agents SAHELYS</p>
@@ -11,14 +10,38 @@
 
     <!-- Alerte de session expirée -->
     @if (isSessionExpired()) {
-      <div class="warning-alert" role="alert" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #d97706; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+      <div
+        class="warning-alert"
+        role="alert"
+        style="
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.3);
+          color: #d97706;
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          margin-bottom: 1rem;
+          font-size: 0.875rem;
+        "
+      >
         Votre session a expiré. Veuillez vous reconnecter pour continuer.
       </div>
     }
 
     <!-- Message d'erreur s'il y a un échec de connexion -->
     @if (errorMessage()) {
-      <div class="error-alert" role="alert" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+      <div
+        class="error-alert"
+        role="alert"
+        style="
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          color: #ef4444;
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          margin-bottom: 1rem;
+          font-size: 0.875rem;
+        "
+      >
         {{ errorMessage() }}
       </div>
     }
@@ -26,12 +49,12 @@
     <form class="login-form" (ngSubmit)="login()" #form="ngForm">
       <label class="field">
         <span>Identifiant / Adresse email *</span>
-        <input 
-          type="text" 
-          name="email" 
-          [(ngModel)]="formModel.email" 
+        <input
+          type="text"
+          name="email"
+          [(ngModel)]="formModel.email"
           placeholder="Moussa KIENDREBEOGO ou email"
-          required 
+          required
           [disabled]="isLoading()"
         />
       </label>

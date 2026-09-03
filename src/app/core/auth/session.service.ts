@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, map, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -40,7 +40,9 @@ export class SessionService {
           id: res.nom, // Utilisé comme identifiant unique
           nom: res.nom,
           prenom: '',
-          email: email.includes('@') ? email : `${res.nom.toLowerCase().replace(/\s+/g, '.')}@sahelys.local`,
+          email: email.includes('@')
+            ? email
+            : `${res.nom.toLowerCase().replace(/\s+/g, '.')}@sahelys.local`,
           role: this.normalizeRole(res.role),
           direction: res.direction as Direction,
           token: res.access_token,
@@ -49,15 +51,22 @@ export class SessionService {
         this.setUser(user);
         return true;
       }),
-      catchError((error) => {
+      catchError((error: HttpErrorResponse) => {
         let msg = 'Identifiants incorrects ou serveur indisponible.';
-        if (error.status === 401) {
-          msg = 'Nom d\'utilisateur/Email ou mot de passe incorrect.';
+        const detail = typeof error.error?.detail === 'string' ? error.error.detail : '';
+        if (error.status === 403) {
+          msg = 'Votre compte est bloqué. Contactez l’administrateur.';
+        } else if (detail) {
+          msg = detail;
+        } else if (error.status === 401) {
+          msg = "Nom d'utilisateur/Email ou mot de passe incorrect.";
         } else if (error.status === 0) {
-          msg = 'Impossible de contacter le serveur backend. Vérifiez qu\'il est démarré sur ' + environment.apiUrl;
+          msg =
+            "Impossible de contacter le serveur backend. Vérifiez qu'il est démarré sur " +
+            environment.apiUrl;
         }
         return throwError(() => new Error(msg));
-      })
+      }),
     );
   }
 
@@ -101,7 +110,9 @@ export class SessionService {
           if (user && user.role) {
             user.role = this.normalizeRole(user.role);
             user.prenom = user.prenom ?? '';
-            user.email = user.email ?? `${(user.nom || 'user').toLowerCase().replace(/\s+/g, '.')}@sahelys.local`;
+            user.email =
+              user.email ??
+              `${(user.nom || 'user').toLowerCase().replace(/\s+/g, '.')}@sahelys.local`;
           }
           return user;
         } catch {
@@ -114,7 +125,11 @@ export class SessionService {
 
   private normalizeRole(rawRole: string | undefined | null): UserRole {
     if (!rawRole) return 'collaborateur';
-    const clean = rawRole.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const clean = rawRole
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
     if (clean.includes('referent')) {
       return 'referent';
     }

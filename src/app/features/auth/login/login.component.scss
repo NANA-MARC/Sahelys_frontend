@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: #EEF3F8;
+  background: #eef3f8;
   padding: 24px 16px;
   font-family: sans-serif;
 }
@@ -16,7 +16,7 @@
 .login-card {
   width: min(470px, 100%);
   background: #ffffff;
-  border: 1px solid #E1E7F0;
+  border: 1px solid #e1e7f0;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(18, 58, 102, 0.12);
   padding: 36px 40px 38px;
@@ -32,46 +32,25 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 30px;
-  color: #0052CC;
+  color: #0052cc;
 }
 
-.brand-mark {
-  position: relative;
-  width: 24px;
-  height: 30px;
-  border: 3px solid #0052CC;
-  border-radius: 3px;
-  transform: skewY(-18deg);
-}
-
-.brand-mark::after {
-  position: absolute;
-  content: '';
-  width: 14px;
-  height: 17px;
-  top: 8px;
-  left: 7px;
-  border: 3px solid #0052CC;
-  border-radius: 3px;
-  background: #ffffff;
-}
-
-.brand-name {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+.brand-logo {
+  display: block;
+  width: 180px;
+  height: auto;
 }
 
 h1 {
   margin: 0;
   font-size: 2.1rem;
   line-height: 1.2;
-  color: #0A1C33;
+  color: #0a1c33;
 }
 
 .subtitle {
   margin: 8px 0 0;
-  color: #5A6E85;
+  color: #5a6e85;
   line-height: 1.5;
 }
 
@@ -83,24 +62,24 @@ h1 {
 .field {
   display: grid;
   gap: 7px;
-  color: #5A6E85;
+  color: #5a6e85;
   font-weight: 500;
 }
 
 .field input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #E1E7F0;
+  border: 1px solid #e1e7f0;
   border-radius: 8px;
   font-size: 1rem;
-  color: #0A1C33;
+  color: #0a1c33;
   background: #fff;
   box-sizing: border-box;
 }
 
 .field input:focus {
-  outline: 2px solid #E1EDFF;
-  border-color: #1D72E8;
+  outline: 2px solid #e1edff;
+  border-color: #1d72e8;
 }
 
 .password-field {
@@ -119,7 +98,7 @@ h1 {
   padding: 0;
   transform: translateY(-50%);
   background: transparent;
-  color: #5A6E85;
+  color: #5a6e85;
   font-size: 1.15rem;
   cursor: pointer;
 }
@@ -128,7 +107,7 @@ h1 {
   display: block;
   width: 16px;
   height: 10px;
-  border: 1.5px solid #5A6E85;
+  border: 1.5px solid #5a6e85;
   border-radius: 100% 0;
   transform: rotate(-45deg);
 }
@@ -139,28 +118,28 @@ h1 {
   height: 4px;
   margin: 1.5px auto 0;
   border-radius: 50%;
-  background: #5A6E85;
+  background: #5a6e85;
   content: '';
 }
 
 .forgot-password {
   justify-self: end;
   margin-top: -5px;
-  color: #0052CC;
+  color: #0052cc;
   font-weight: 600;
   text-decoration: none;
 }
 
 .forgot-password:hover,
 .forgot-password:focus-visible {
-  color: #1D72E8;
+  color: #1d72e8;
   text-decoration: underline;
 }
 
 .primary-btn {
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #0052CC, #1D72E8);
+  background: linear-gradient(135deg, #0052cc, #1d72e8);
   color: white;
   font-weight: 700;
   padding: 14px 18px;

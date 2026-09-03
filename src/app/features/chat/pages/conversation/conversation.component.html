@@ -52,13 +52,30 @@
           ></app-message-bubble>
         }
 
+        @if (isStreaming() && !streamedAnswer()) {
+          <article class="message message--agent">
+            <span class="message-avatar" aria-hidden="true">
+              <svg [lucideIcon]="Bot" size="20"></svg>
+            </span>
+            <div class="message-body">
+              <div class="thinking-indicator" role="status" aria-label="Réponse en cours">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </article>
+        }
+
         @if (streamedAnswer()) {
           <article class="message message--agent">
             <span class="message-avatar" aria-hidden="true">
               <svg [lucideIcon]="Bot" size="20"></svg>
             </span>
             <div class="message-body">
-              <span class="author">Agent · {{ isStreaming() ? 'répond...' : 'réponse complète' }}</span>
+              <span class="author"
+                >Agent · {{ isStreaming() ? 'répond...' : 'réponse complète' }}</span
+              >
               <p>{{ streamedAnswer() }}</p>
             </div>
           </article>
@@ -68,7 +85,10 @@
       <div class="empty-chat-state">
         <svg [lucideIcon]="MessageSquare" size="48" class="empty-icon"></svg>
         <h3>Discutez avec {{ (agent$ | async)?.nom || 'cet Agent' }}</h3>
-        <p>Posez vos questions liées à la documentation de la direction {{ (agent$ | async)?.direction }}.</p>
+        <p>
+          Posez vos questions liées à la documentation de la direction
+          {{ (agent$ | async)?.direction }}.
+        </p>
       </div>
     }
 

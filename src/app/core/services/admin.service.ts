@@ -34,7 +34,7 @@ export class AdminService {
   getUsers(): Observable<User[]> {
     return this.http.get<UserApiResponse[]>(`${this.apiUrl}/users`).pipe(
       map((users) => users.map((u) => this.mapUserFromApi(u))),
-      catchError(() => of([]))
+      catchError(() => of([])),
     );
   }
 
@@ -42,18 +42,28 @@ export class AdminService {
    * Crée un nouvel utilisateur avec mot de passe initial
    */
   createUser(payload: UserCreatePayload): Observable<User> {
-    return this.http.post<UserApiResponse>(`${this.apiUrl}/users`, payload).pipe(
-      map((u) => this.mapUserFromApi(u))
-    );
+    return this.http
+      .post<UserApiResponse>(`${this.apiUrl}/users`, payload)
+      .pipe(map((u) => this.mapUserFromApi(u)));
   }
 
   /**
    * Met à jour un utilisateur existant
    */
   updateUser(userId: string, payload: UserUpdatePayload): Observable<User> {
-    return this.http.put<UserApiResponse>(`${this.apiUrl}/users/${userId}`, payload).pipe(
-      map((u) => this.mapUserFromApi(u))
-    );
+    return this.http
+      .put<UserApiResponse>(`${this.apiUrl}/users/${userId}`, payload)
+      .pipe(map((u) => this.mapUserFromApi(u)));
+  }
+
+  deleteUser(userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/users/${userId}`);
+  }
+
+  updateUserStatus(userId: string, actif: boolean): Observable<User> {
+    return this.http
+      .patch<UserApiResponse>(`${this.apiUrl}/users/${userId}/status`, { actif })
+      .pipe(map((u) => this.mapUserFromApi(u)));
   }
 
   /**
@@ -72,9 +82,9 @@ export class AdminService {
       commentaire_signalement: comment,
     };
 
-    return this.http.patch<void>(`${environment.apiUrl}/interactions/${interactionId}/signalement`, payload).pipe(
-      map(() => true)
-    );
+    return this.http
+      .patch<void>(`${environment.apiUrl}/interactions/${interactionId}/signalement`, payload)
+      .pipe(map(() => true));
   }
 
   /**
@@ -103,7 +113,7 @@ export class AdminService {
       email: user.email ?? '',
       direction: (user.direction as Direction) || 'RH',
       role: (user.role as UserRole) || 'collaborateur',
-      actif: true,
+      actif: user.actif ?? true,
     };
   }
 }

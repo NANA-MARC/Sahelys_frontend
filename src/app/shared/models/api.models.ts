@@ -25,6 +25,7 @@ export interface UserApiResponse {
   email?: string | null;
   direction: string;
   role: string;
+  actif?: boolean;
 }
 
 export interface UserCreatePayload {
@@ -40,6 +41,7 @@ export interface UserUpdatePayload {
   email?: string | null;
   nom?: string | null;
   prenom?: string | null;
+  mot_de_passe?: string | null;
   direction?: string | null;
   role?: string | null;
 }

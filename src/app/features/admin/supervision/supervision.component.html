@@ -1,9 +1,7 @@
 <app-header backUrl="/chat" title="Administration & Supervision"></app-header>
 
-
 <!-- Main Shell -->
 <main class="page-shell">
-
   <!-- Toast Notification -->
   <app-toast [message]="toastMessage()"></app-toast>
 
@@ -31,10 +29,20 @@
 
       <!-- KPIs Grid -->
       <div class="kpi-grid">
-        <app-kpi-card label="Directions actives" [value]="kpis()?.directionsActives ?? 3"></app-kpi-card>
+        <app-kpi-card
+          label="Directions actives"
+          [value]="kpis()?.directionsActives ?? 3"
+        ></app-kpi-card>
         <app-kpi-card label="Agents publiés" [value]="kpis()?.agentsPublies ?? 5"></app-kpi-card>
-        <app-kpi-card label="Utilisateurs actifs" [value]="kpis()?.utilisateursActifs ?? 142"></app-kpi-card>
-        <app-kpi-card label="Alertes de sécurité" [value]="kpis()?.alertesSecurite ?? 1" [danger]="true"></app-kpi-card>
+        <app-kpi-card
+          label="Utilisateurs actifs"
+          [value]="kpis()?.utilisateursActifs ?? 142"
+        ></app-kpi-card>
+        <app-kpi-card
+          label="Alertes de sécurité"
+          [value]="kpis()?.alertesSecurite ?? 1"
+          [danger]="true"
+        ></app-kpi-card>
       </div>
 
       <!-- Tableau Activités par Direction -->
@@ -66,8 +74,6 @@
       </div>
     </section>
   }
-
-
 
   <!-- ONGLET 2 : Comptes -->
   @if (activeTab() === 'comptes') {
@@ -132,12 +138,44 @@
                   <app-user-role-badge [role]="user.role"></app-user-role-badge>
                 </td>
                 <td>
-                  <app-status-badge status="Actif"></app-status-badge>
+                  <app-status-badge [status]="user.actif ? 'Actif' : 'Bloqué'"></app-status-badge>
                 </td>
                 <td class="text-secondary">14 Mar 2026, 09:30</td>
                 <td class="actions-cell">
-                  <button type="button" class="action-icon" aria-label="Modifier le compte"><svg [lucideIcon]="Edit" size="16"></svg></button>
-                  <button type="button" class="action-icon" aria-label="Sécurité / Bloquer"><svg [lucideIcon]="Lock" size="16"></svg></button>
+                  <button
+                    type="button"
+                    class="action-icon"
+                    aria-label="Modifier le compte"
+                    (click)="openEditUserModal(user)"
+                  >
+                    <svg [lucideIcon]="Edit" size="16"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="action-icon"
+                    [attr.aria-label]="user.actif ? 'Bloquer le compte' : 'Débloquer le compte'"
+                    [title]="
+                      user.role === 'administrateur'
+                        ? 'Un compte administrateur ne peut pas être bloqué'
+                        : user.actif
+                          ? 'Bloquer le compte'
+                          : 'Débloquer le compte'
+                    "
+                    [disabled]="user.role === 'administrateur'"
+                    (click)="toggleUserStatus(user)"
+                  >
+                    <svg [lucideIcon]="user.actif ? Lock : Unlock" size="16"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="action-icon"
+                    aria-label="Supprimer le compte"
+                    title="Un compte administrateur ne peut pas être supprimé"
+                    [disabled]="user.role === 'administrateur'"
+                    (click)="deleteUser(user)"
+                  >
+                    <svg [lucideIcon]="Trash2" size="16"></svg>
+                  </button>
                 </td>
               </tr>
             } @empty {
@@ -309,11 +347,13 @@
       </div>
     </section>
   }
-
 </main>
 
 @if (showCreateUserModal()) {
-  <app-modal title="Créer un nouvel utilisateur" (close)="closeCreateUserModal()">
+  <app-modal
+    [title]="editingUserId ? 'Modifier l’utilisateur' : 'Créer un nouvel utilisateur'"
+    (close)="closeCreateUserModal()"
+  >
     <div modal-body>
       <div class="form-row">
         <div class="form-field">
@@ -332,8 +372,13 @@
       </div>
 
       <div class="form-field">
-        <label>Mot de passe initial *</label>
-        <input type="password" [(ngModel)]="newUser.mot_de_passe" placeholder="••••••••" required />
+        <label>{{ editingUserId ? 'Mot de passe' : 'Mot de passe initial *' }}</label>
+        <input
+          type="password"
+          [(ngModel)]="newUser.mot_de_passe"
+          placeholder="••••••••"
+          [required]="!editingUserId"
+        />
       </div>
 
       <div class="form-row">
@@ -359,7 +404,9 @@
 
     <div modal-footer>
       <button type="button" class="secondary-btn" (click)="closeCreateUserModal()">Annuler</button>
-      <button type="button" class="primary-btn" (click)="submitCreateUser()">Créer le compte</button>
+      <button type="button" class="primary-btn" (click)="submitCreateUser()">
+        {{ editingUserId ? 'Enregistrer les modifications' : 'Créer le compte' }}
+      </button>
     </div>
   </app-modal>
 }
